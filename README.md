@@ -19,7 +19,7 @@ Synth App using SDL2 and PortAudio
     ./build.ps1
     ```
 
-4) The application is in `bin/` folder, you can run from there.
+4) The application is in `bin/` folder which will be created during building, you can run it from there.
    You can also use the run powershell script :
 
     ```Powershell
