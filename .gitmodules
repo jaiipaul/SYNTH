@@ -1,0 +1,12 @@
+[submodule "ext/SDL"]
+	path = ext/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "ext/SDL_image"]
+	path = ext/SDL_image
+	url = https://github.com/libsdl-org/SDL_image.git
+[submodule "ext/portaudio"]
+	path = ext/portaudio
+	url = https://github.com/PortAudio/portaudio.git
+[submodule "ext/libremidi"]
+	path = ext/libremidi
+	url = https://github.com/jcelerier/libremidi.git
