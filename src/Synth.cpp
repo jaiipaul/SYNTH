@@ -3,18 +3,19 @@
 #include "Oscillator.h"
 #include "Amplifier.h"
 #include "Envelops.h"
-#include "Filter.h"
+#include "LadderFilter.h"
 #include "keyboard.h"
 #include <functional>   // std::bind
 
 static AudioEngine* __audioEngine__ = new AudioEngine();
 static Oscillator* __Osc__ = new Oscillator();
 static Amplifier*  __Amp__ = new Amplifier();
-static Filter* __Filter__  = new Filter();
+static LadderFilter* __Filter__  = new LadderFilter();
 
 void StartStream();
 void StopStream();
 void ListDevices();
+void SetPulseWidth(double coef);
 void SetVolume(double coef);
 void SetEnvLvl(double coef);
 void SetAR_Attack(double coef);
@@ -25,6 +26,8 @@ void SetADSR_Sustain(double coef);
 void SetADSR_Release(double coef);
 void SwitchEnvType();
 void SetCutoff(double coef);
+void SetResonance(double coef);
+void SwitchWaveForm();
 
 Synth::Synth(){
 
@@ -82,6 +85,7 @@ void Synth::buildSynthGui(){
     buttonFunc startStream  = &StartStream;
     buttonFunc stopStream   = &(StopStream);
     buttonFunc listDevices  = &(ListDevices);
+    sliderFunc setPulseWidth = &(SetPulseWidth);
     sliderFunc setVolume    = &(SetVolume);
     sliderFunc setEnvLvl    = &(SetEnvLvl);
     sliderFunc setAR_Attack    = &(SetAR_Attack);
@@ -92,7 +96,8 @@ void Synth::buildSynthGui(){
     sliderFunc setADSR_Release = &(SetADSR_Release);
     buttonFunc switchEnvType   = &(SwitchEnvType);
     sliderFunc setCutoff       = &(SetCutoff);
-
+    sliderFunc setResonance    = &(SetResonance);
+    buttonFunc switchWaveForm  = &(SwitchWaveForm);
     Button* button1 = new Button(renderer, 10, 10, 64, 16, "../../assets/button.png");
     button1->setFunction(startStream);
     Button* button2 = new Button(renderer, 10, 36, 64, 16, "../../assets/button.png");
@@ -124,6 +129,14 @@ void Synth::buildSynthGui(){
     //Filter 
     Slider* slider9 = new Slider(renderer, 550, 50, 32, 8, 100, "../../assets/button.png");
     slider9->setFunction(setCutoff);
+    Slider* slider10 = new Slider(renderer, 600, 50, 32, 8, 100, "../../assets/button.png");
+    slider10->setFunction(setResonance);
+
+    // Osc
+    Slider* slider11 = new Slider(renderer, 350, 50, 32, 8, 100, "../../assets/button.png");
+    slider11->setFunction(setPulseWidth);
+    Button* button5 = new Button(renderer, 250, 75, 64, 16, "../../assets/button.png");
+    button5->setFunction(switchWaveForm);
 
     addWidget(button1);
     addWidget(button2);
@@ -138,16 +151,19 @@ void Synth::buildSynthGui(){
     addWidget(slider8);
     addWidget(button4);
     addWidget(slider9);
+    addWidget(slider10);
+    addWidget(slider11);
+    addWidget(button5);
 }
 
 void Synth::buildSynthModules(){
     __keyboard__ = new Keyboard();
-    __Osc__->init("sqr", sampleRate, __keyboard__);
+    __Osc__->init(2, sampleRate, __keyboard__);
     __Amp__->init(sampleRate, __keyboard__);
     __Filter__->init(sampleRate);
 }
 
-void Synth::SynthOutput(Oscillator* Osc, Filter* Filt, Amplifier* Amp, PaData* Data){
+void Synth::SynthOutput(Oscillator* Osc, LadderFilter* Filt, Amplifier* Amp, PaData* Data){
     Osc->generateWave(Data);
     Filt->genOutput(Data);
     Amp->genOutput(Data);
@@ -180,7 +196,10 @@ void StopStream(){
 void ListDevices(){
     __audioEngine__->ListDevices();
 }
-
+//OSC
+void SetPulseWidth(double coef){
+    __Osc__->setPulseWidth(coef);
+}
 // AMPLIFIER
 void SetVolume(double coef){
     __Amp__->setVolume(coef);
@@ -217,4 +236,12 @@ void SwitchEnvType(){
 
 void SetCutoff(double coef){
     __Filter__->setCutoff(coef);
+}
+
+void SetResonance(double coef){
+    __Filter__->setResonance(coef);
+}
+
+void SwitchWaveForm(){
+    __Osc__->switchWaveForm();
 }

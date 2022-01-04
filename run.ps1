@@ -1,3 +1,3 @@
 cd bin/Release/
-./AUDIO.exe
+./SYNTH.exe
 cd ../..
