@@ -1,27 +1,6 @@
 # SYNTH APP 
-Synth App using SDL2 and PortAudio
+Synth App using SDL2, PortAudio and LibreMidi
 
+Installation works for Windows with configure.ps1 then build.ps1
 
-## Installation for WINDOWS
-1) Visual Studio 2019 should be installed
-2) Compile PortAudio library :  
-
-     ```Powershell 
-     cd libs/portaudio/
-     mkdir build && cd build && cmake ..
-     cmake --build . --config Release --target ALL_BUILD -j 10 --
-     cd ../../..
-     ```
-
-3) Then Compile sources using build powershell script :
-    
-    ```Powershell
-    .\build.ps1
-    ```
-
-4) The application is in `bin/` folder which will be created during building, you can run it from there.
-   You can also use the run powershell script :
-
-    ```Powershell
-    .\run.ps1
-    ```
+Need to update CMakeLists.txt fot other compilers.
