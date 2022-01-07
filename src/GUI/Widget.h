@@ -3,8 +3,7 @@
 
 #include "SDL.h"
 
-typedef void (*buttonFunc)();
-typedef void (*sliderFunc)(double);
+#include "typeDef.h"
 
 class Widget{
 public:

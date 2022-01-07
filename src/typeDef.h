@@ -1,7 +1,11 @@
 #ifndef _TYPEDEF_H_
 #define _TYPEDEF_H_
 
-#include "portaudio.h"
+#include <portaudio.h>
+
+typedef void (*buttonFunc)();
+typedef void (*sliderFunc)(double);
+typedef float (*signalGen)();
 
 typedef int (*CallBack)(const void *inputBuffer, void *outputBuffer,
                          unsigned long framesPerBuffer,

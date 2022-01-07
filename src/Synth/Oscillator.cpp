@@ -40,7 +40,6 @@ float Oscillator::generateWave(){
     float value;
     float tempFreq = (baseFrequency*keyboard->getNote()*pow(2.f, detune/12.f));
     Frequency = oscLFO_linked ? freqLFO_intensity*maxFreqMod*oscLFO->getValue() + tempFreq : tempFreq;
-    //std::cout << "Osc Frequency Mod: " << freqLFO_intensity*maxFreqMod*oscLFO->getValue() << std::endl;
     switch(waveForm){
         case 0: /*SAW*/
             value = time*2.f-1.f;
@@ -50,7 +49,6 @@ float Oscillator::generateWave(){
             break;
         case 2: /*SQUARE*/
             PulseWidthMod = oscLFO_linked ? (PwLFO_intensity*maxPwMod*oscLFO->getValue() + PulseWidth) : PulseWidth;
-            //std::cout << "Osc PW : " << PulseWidthMod << std::endl;
             value  = (time < PulseWidthMod) ? 1.f : -1.f;
             break;
         case 3: /*SINE*/
@@ -62,10 +60,8 @@ float Oscillator::generateWave(){
      }else{
         t = 0;
      }
-    //Data->t++;
     time = fmod(Frequency*(float)t/sampleRate,1.0);
-    return(value);
-    //std::cout << time << std::endl;  
+    return(value);  
 }
 
 void Oscillator::setLFO(LFO* _oscLFO){

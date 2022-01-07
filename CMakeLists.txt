@@ -25,6 +25,7 @@ set(SOURCES
     ${SOURCES_DIR}/Synth/Filter.cpp
     ${SOURCES_DIR}/Synth/LadderFilter.cpp
     ${SOURCES_DIR}/Synth/LFO.cpp
+    ${SOURCES_DIR}/Synth/Mixer.cpp
 )
 
 set(EXTERNALS

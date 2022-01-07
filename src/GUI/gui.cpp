@@ -1,8 +1,5 @@
 #include "gui.h"
-#include "Widget.h"
-#include "Button.h"
-#include "Slider.h"
-//#include "Oscillator.h"
+#include "Widgets.h"
 
 SDL_Renderer* Gui::renderer = nullptr;
 SDL_Event Gui::event;
@@ -37,9 +34,7 @@ void Gui::init(const char* title,
             std::cout << "renderer created!..." << std::endl;
         }
         Running = true;
-    }
-
-    
+    }   
 }
 
 void Gui::handleEvents(){

@@ -6,6 +6,7 @@
 
 class Keyboard;
 class Oscillator;
+class Mixer;
 class Amplifier;
 class LadderFilter;
 class LFO;
@@ -33,7 +34,7 @@ public:
 
     void buildSynthModules();
     void buildSynthGui();
-    static void SynthOutput(Oscillator* Osc1, Oscillator* Osc2, LadderFilter* Filt, LFO* lfo, Amplifier* Amp, PaData* Data);
+    static void SynthOutput(Mixer* Mix, LadderFilter* Filt, LFO* lfo, Amplifier* Amp, PaData* Data);
 
     static int Callback(const void *inputBuffer, void *outputBuffer,
                         unsigned long framesPerBuffer,

@@ -1,14 +1,18 @@
 #include "Synth.h"
 #include "Widgets.h"
+#include "Mixer.h"
 #include "Oscillator.h"
 #include "Amplifier.h"
 #include "Envelops.h"
 #include "LadderFilter.h"
 #include "LFO.h"
 #include "keyboard.h"
-#include <functional>   // std::bind
+#include <vector>
+
 
 static AudioEngine* __audioEngine__ = new AudioEngine();
+static Mixer* __Mix__ = new Mixer();
+static std::vector<Oscillator*> Oscillators;
 static Oscillator* __Osc1__ = new Oscillator();
 static Oscillator* __Osc2__ = new Oscillator();
 static Amplifier*  __Amp__ = new Amplifier();
@@ -58,7 +62,7 @@ int Synth::Callback( const void *inputBuffer, void *outputBuffer,
     for( i=0; i<framesPerBuffer; i++ )
     {   
 
-        SynthOutput(__Osc1__, __Osc2__, __Filter__, __LFO__, __Amp__, callbackData);
+        SynthOutput(__Mix__, __Filter__, __LFO__, __Amp__, callbackData);
         out[2*i]   = callbackData->left_phase;  /* left */
         out[2*i+1] = callbackData->right_phase; /* right */
     }
@@ -67,20 +71,20 @@ int Synth::Callback( const void *inputBuffer, void *outputBuffer,
 
 void Synth::initSynth(const char* _name, int _width, int _height, bool fullscreen,
                       unsigned long _sampleRate, unsigned long _bufferSize){
+    /* AUDIO ENGINE INITIALISATION */
     sampleRate = _sampleRate; bufferSize = _bufferSize;         
     __audioEngine__->init(sampleRate, bufferSize);
     __audioEngine__->SetCallBackFunc(&Callback);
     __audioEngine__->OpenDefaultStream();
 
+    /* SYNTH INITIALISATION */
     name = _name; width = _width; height = _height;
     init("Synth", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, fullscreen);
 
-
-
-
     buildSynthGui();
+    std::cout << "Built Gui..." << std::endl;
     buildSynthModules();
-
+    std::cout << "Built Modules..." << std::endl;
 }
 
 
@@ -183,6 +187,12 @@ void Synth::buildSynthModules(){
     __keyboard__ = new Keyboard();
     __Osc1__->init(2, 3, sampleRate, __keyboard__);
     __Osc2__->init(2, 3, sampleRate, __keyboard__);
+    std::cout << "Built Oscs..." << std::endl;
+    Oscillators.push_back(__Osc1__);
+    Oscillators.push_back(__Osc2__);
+    std::cout << "Stored Osc..." << std::endl;
+    __Mix__->init(2);
+    std::cout << "Built Mixer..." << std::endl;
     __Amp__->init(sampleRate, __keyboard__);
     __Filter__->init(96000.f);
     __LFO__->init(3, 44100, __keyboard__);
@@ -190,10 +200,9 @@ void Synth::buildSynthModules(){
     __Osc2__->setLFO(__LFO__);
 }
 
-void Synth::SynthOutput(Oscillator* Osc1, Oscillator* Osc2, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp, PaData* Data){
+void Synth::SynthOutput(Mixer* Mix, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp, PaData* Data){
     Lfo->generateWave();
-    Data->left_phase  = (Osc1->generateWave() + Osc2->generateWave())/2.f;
-    Data->right_phase = (Osc1->generateWave() + Osc2->generateWave())/2.f;
+    Mix->generateOutput(Data, Oscillators);
     Filt->genOutput(Data);
     Amp->genOutput(Data);
 }
@@ -227,8 +236,8 @@ void ListDevices(){
 }
 //OSC
 void SetPulseWidth(double coef){
-    __Osc1__->setPulseWidth(coef);
-    __Osc2__->setPulseWidth(coef);
+    Oscillators[0]->setPulseWidth(coef);
+    Oscillators[1]->setPulseWidth(coef);
 }
 // AMPLIFIER
 void SetVolume(double coef){
@@ -273,22 +282,22 @@ void SetResonance(double coef){
 }
 
 void SwitchWaveForm(){
-    __Osc1__->switchWaveForm();
-    __Osc2__->switchWaveForm();
+    Oscillators[0]->switchWaveForm();
+    Oscillators[1]->switchWaveForm();
 }
 
 void SetFreqMod(double coef){
-    __Osc1__->setLFO_freq_intensity(coef);
-    __Osc2__->setLFO_freq_intensity(coef);
+    Oscillators[0]->setLFO_freq_intensity(coef);
+    Oscillators[1]->setLFO_freq_intensity(coef);
 }
 void SetPwMod(double coef){
-    __Osc1__->setLFO_Pw_intensity(coef);
-    __Osc2__->setLFO_Pw_intensity(coef);
+    Oscillators[0]->setLFO_Pw_intensity(coef);
+    Oscillators[1]->setLFO_Pw_intensity(coef);
 }
 void SetLfoRate(double coef){
     __LFO__->setFreq(coef);
 }
 
 void SetDetune(double coef){
-    __Osc2__->setDetune(coef);
+    Oscillators[1]->setDetune(coef);
 }
