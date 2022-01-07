@@ -11,9 +11,12 @@ private :
 
     float resonance;
 
-    float* StageOutputs;
-    float* StageFeedbacks;
+    double* StageOutputs;
+    double* StageFeedbacks;
+    double* StageT;
+
     float G;
+    float comp;
 
     float sampleRate;
 public:

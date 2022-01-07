@@ -9,7 +9,6 @@ set(BUILD_DIR
 set(SOURCES_DIR        
     "${PROJECT_SOURCE_DIR}/src/")
 set(SOURCES
-    #${SOURCES_DIR}/hello.cpp
     ${SOURCES_DIR}/main.cpp
     ${SOURCES_DIR}/Synth.cpp
     #Graphics Sources

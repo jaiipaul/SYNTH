@@ -13,63 +13,64 @@ Oscillator::~Oscillator(){
 
 }
 
-void Oscillator::init(int _waveForm, unsigned long _sampleRate){
+void Oscillator::init(int _waveForm, int _octave, unsigned long _sampleRate){
     waveForm = _waveForm;
-    sampleRate = _sampleRate;
-    Frequency = 1000.0;
+    sampleRate = (float)_sampleRate;
+    octave = _octave;
+    baseFrequency =  pow(2.0f, 1.0f/12.0f) * pow(2, octave);
+    detune = 0;
     PulseWidth = 0.5f;
     oscLFO_linked = false;
+    time = 0;
 }
 
-void Oscillator::init(int _waveForm, unsigned long _sampleRate, Keyboard* _keyboard){
+void Oscillator::init(int _waveForm, int _octave, unsigned long _sampleRate, Keyboard* _keyboard){
     waveForm = _waveForm;
-    sampleRate = _sampleRate;
-    Frequency = 1000.0;
+    sampleRate = (float)_sampleRate;
+    octave = _octave;
+    baseFrequency =  pow(2.0f, 1.0f/12.0f) * pow(2, octave);
+    detune = 0;
     PulseWidth = 0.5f;
     keyboard = _keyboard;
     oscLFO_linked = false;
+    time = 0;
 }
 
-void Oscillator::generateWave(PaData* Data){
-    Frequency = oscLFO_linked ? freqLFO_intensity*maxFreqMod*oscLFO->getValue() + keyboard->getNote() : keyboard->getNote();
-    //std::cout << "Osc Frequency : " << Frequency << std::endl;
+float Oscillator::generateWave(){
+    float value;
+    float tempFreq = (baseFrequency*keyboard->getNote()*pow(2.f, detune/12.f));
+    Frequency = oscLFO_linked ? freqLFO_intensity*maxFreqMod*oscLFO->getValue() + tempFreq : tempFreq;
+    //std::cout << "Osc Frequency Mod: " << freqLFO_intensity*maxFreqMod*oscLFO->getValue() << std::endl;
     switch(waveForm){
         case 0: /*SAW*/
-            Data->left_phase = -1.f + (float)Data->t * 2.f*Frequency/(float)sampleRate;
-            Data->right_phase = -1.f + (float)Data->t * 2.f*Frequency/(float)sampleRate;
+            value = time*2.f-1.f;
             break;
         case 1: /*TRIANGLE*/
-            if(Data->t < (float)sampleRate/(2.f*Frequency)){
-                Data->left_phase  = -1.f + (float)Data->t * 4.f*Frequency/(float)sampleRate;
-                Data->right_phase = -1.f + (float)Data->t * 4.f*Frequency/(float)sampleRate;
-            }else{
-                Data->left_phase  = 1.f - (float)Data->t * 4.f*Frequency/(float)sampleRate;
-                Data->right_phase = 1.f - (float)Data->t * 4.f*Frequency/(float)sampleRate;
-            }
+            value = 1.f-fabs(time-0.5)*4.f;
             break;
         case 2: /*SQUARE*/
-            PulseWidth = oscLFO_linked ? (PwLFO_intensity*maxPwMod*oscLFO->getValue() + PulseWidth) : PulseWidth;
-            if(Data->t < (PulseWidth*(float)sampleRate/Frequency)){
-            Data->left_phase = 1.0f;
-            Data->right_phase = 1.0f;
-            }else{
-            Data->left_phase = -1.0f;
-            Data->right_phase = -1.0f;
-            }
+            PulseWidthMod = oscLFO_linked ? (PwLFO_intensity*maxPwMod*oscLFO->getValue() + PulseWidth) : PulseWidth;
+            //std::cout << "Osc PW : " << PulseWidthMod << std::endl;
+            value  = (time < PulseWidthMod) ? 1.f : -1.f;
             break;
+        case 3: /*SINE*/
+            value = sin(2.f*PI*time);
     }
 
-    if((Data->t) < (float)sampleRate/Frequency){
-        Data->t++;
-    }else{
-        Data->t = 0;
-    }
-    //std::cout << Data->left_phase << std::endl;  
+     if(t < sampleRate/Frequency){
+        t++;
+     }else{
+        t = 0;
+     }
+    //Data->t++;
+    time = fmod(Frequency*(float)t/sampleRate,1.0);
+    return(value);
+    //std::cout << time << std::endl;  
 }
 
 void Oscillator::setLFO(LFO* _oscLFO){
     oscLFO = _oscLFO;
-    oscLFO_linked = false;
+    oscLFO_linked = true;
 }
 void Oscillator::setLFO_freq_intensity(double coef){
     freqLFO_intensity = (float)coef;
@@ -81,7 +82,7 @@ void Oscillator::setLFO_Pw_intensity(double coef){
 }
 
 void Oscillator::switchWaveForm(){
-    waveForm = (++waveForm)%3;
+    waveForm = (++waveForm)%4;
     switch(waveForm){
         case 0:
             std::cout << "Oscillator WaveForm : SAW" << std::endl;
@@ -91,6 +92,9 @@ void Oscillator::switchWaveForm(){
             break;
         case 2:
             std::cout << "Oscillator WaveForm : SQR" << std::endl;
+            break;
+        case 3:
+            std::cout << "Oscillator WaveForm : SINE" << std::endl;
             break;
     }
 }
@@ -107,10 +111,13 @@ void Oscillator::setWaveForm(int form){
         case 2:
             std::cout << "Oscillator WaveForm : SQR" << std::endl;
             break;
+        case 3:
+            std::cout << "Oscillator WaveForm : SINE" << std::endl;
+            break;
     }
 }
 
-void Oscillator::setFreq(double coef){
+void Oscillator::setBaseFreq(double coef){
     Frequency = coef*(maxFreq - minFreq);
     std::cout << "Osc Frequency : " << Frequency << std::endl;
 }
@@ -118,4 +125,9 @@ void Oscillator::setFreq(double coef){
 void Oscillator::setPulseWidth(double coef){
     PulseWidth = 0.05f + (float)coef*(0.90f);
     std::cout << "Osc PulseWidth : " << PulseWidth << std::endl;
+}
+
+void Oscillator::setDetune(double coef){
+    detune =  (float)coef*(12.f);
+    std::cout << "Osc Detune : " << detune << std::endl;
 }

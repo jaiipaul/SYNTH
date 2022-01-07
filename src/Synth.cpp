@@ -4,13 +4,16 @@
 #include "Amplifier.h"
 #include "Envelops.h"
 #include "LadderFilter.h"
+#include "LFO.h"
 #include "keyboard.h"
 #include <functional>   // std::bind
 
 static AudioEngine* __audioEngine__ = new AudioEngine();
-static Oscillator* __Osc__ = new Oscillator();
+static Oscillator* __Osc1__ = new Oscillator();
+static Oscillator* __Osc2__ = new Oscillator();
 static Amplifier*  __Amp__ = new Amplifier();
 static LadderFilter* __Filter__  = new LadderFilter();
+static LFO* __LFO__ = new LFO();
 
 void StartStream();
 void StopStream();
@@ -28,6 +31,10 @@ void SwitchEnvType();
 void SetCutoff(double coef);
 void SetResonance(double coef);
 void SwitchWaveForm();
+void SetFreqMod(double coef);
+void SetPwMod(double coef);
+void SetLfoRate(double coef);
+void SetDetune(double coef);
 
 Synth::Synth(){
 
@@ -51,7 +58,7 @@ int Synth::Callback( const void *inputBuffer, void *outputBuffer,
     for( i=0; i<framesPerBuffer; i++ )
     {   
 
-        SynthOutput(__Osc__, __Filter__, __Amp__, callbackData);
+        SynthOutput(__Osc1__, __Osc2__, __Filter__, __LFO__, __Amp__, callbackData);
         out[2*i]   = callbackData->left_phase;  /* left */
         out[2*i+1] = callbackData->right_phase; /* right */
     }
@@ -62,12 +69,8 @@ void Synth::initSynth(const char* _name, int _width, int _height, bool fullscree
                       unsigned long _sampleRate, unsigned long _bufferSize){
     sampleRate = _sampleRate; bufferSize = _bufferSize;         
     __audioEngine__->init(sampleRate, bufferSize);
-    std::cout << Callback << std::endl;
     __audioEngine__->SetCallBackFunc(&Callback);
-    std::cout << (__audioEngine__->callbackFunc) << std::endl;
     __audioEngine__->OpenDefaultStream();
-    const PaStreamInfo* streamInfo = Pa_GetStreamInfo(__audioEngine__->stream);
-    std::cout << streamInfo->sampleRate << std::endl;
 
     name = _name; width = _width; height = _height;
     init("Synth", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, fullscreen);
@@ -98,6 +101,11 @@ void Synth::buildSynthGui(){
     sliderFunc setCutoff       = &(SetCutoff);
     sliderFunc setResonance    = &(SetResonance);
     buttonFunc switchWaveForm  = &(SwitchWaveForm);
+    sliderFunc setFreqMod      = &(SetFreqMod);
+    sliderFunc setPwMod      = &(SetPwMod);
+    sliderFunc setLfoRate      = &(SetLfoRate);
+    sliderFunc setDetune       = &(SetDetune);
+
     Button* button1 = new Button(renderer, 10, 10, 64, 16, "../../assets/button.png");
     button1->setFunction(startStream);
     Button* button2 = new Button(renderer, 10, 36, 64, 16, "../../assets/button.png");
@@ -137,6 +145,17 @@ void Synth::buildSynthGui(){
     slider11->setFunction(setPulseWidth);
     Button* button5 = new Button(renderer, 250, 75, 64, 16, "../../assets/button.png");
     button5->setFunction(switchWaveForm);
+    Slider* slider12 = new Slider(renderer, 150, 350, 32, 8, 100, "../../assets/button.png");
+    slider12->setFunction(setFreqMod);
+    Slider* slider13 = new Slider(renderer, 200, 350, 32, 8, 100, "../../assets/button.png");
+    slider13->setFunction(setPwMod);
+
+    //LFO
+    Slider* slider14 = new Slider(renderer, 100, 350, 32, 8, 100, "../../assets/button.png");
+    slider14->setFunction(setLfoRate);
+
+    Slider* slider15 = new Slider(renderer, 300, 350, 32, 8, 100, "../../assets/button.png");
+    slider15->setFunction(setDetune);
 
     addWidget(button1);
     addWidget(button2);
@@ -154,17 +173,27 @@ void Synth::buildSynthGui(){
     addWidget(slider10);
     addWidget(slider11);
     addWidget(button5);
+    addWidget(slider12);
+    addWidget(slider13);
+    addWidget(slider14);
+    addWidget(slider15);
 }
 
 void Synth::buildSynthModules(){
     __keyboard__ = new Keyboard();
-    __Osc__->init(2, sampleRate, __keyboard__);
+    __Osc1__->init(2, 3, sampleRate, __keyboard__);
+    __Osc2__->init(2, 3, sampleRate, __keyboard__);
     __Amp__->init(sampleRate, __keyboard__);
-    __Filter__->init(sampleRate);
+    __Filter__->init(96000.f);
+    __LFO__->init(3, 44100, __keyboard__);
+    __Osc1__->setLFO(__LFO__);
+    __Osc2__->setLFO(__LFO__);
 }
 
-void Synth::SynthOutput(Oscillator* Osc, LadderFilter* Filt, Amplifier* Amp, PaData* Data){
-    Osc->generateWave(Data);
+void Synth::SynthOutput(Oscillator* Osc1, Oscillator* Osc2, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp, PaData* Data){
+    Lfo->generateWave();
+    Data->left_phase  = (Osc1->generateWave() + Osc2->generateWave())/2.f;
+    Data->right_phase = (Osc1->generateWave() + Osc2->generateWave())/2.f;
     Filt->genOutput(Data);
     Amp->genOutput(Data);
 }
@@ -198,7 +227,8 @@ void ListDevices(){
 }
 //OSC
 void SetPulseWidth(double coef){
-    __Osc__->setPulseWidth(coef);
+    __Osc1__->setPulseWidth(coef);
+    __Osc2__->setPulseWidth(coef);
 }
 // AMPLIFIER
 void SetVolume(double coef){
@@ -243,5 +273,22 @@ void SetResonance(double coef){
 }
 
 void SwitchWaveForm(){
-    __Osc__->switchWaveForm();
+    __Osc1__->switchWaveForm();
+    __Osc2__->switchWaveForm();
+}
+
+void SetFreqMod(double coef){
+    __Osc1__->setLFO_freq_intensity(coef);
+    __Osc2__->setLFO_freq_intensity(coef);
+}
+void SetPwMod(double coef){
+    __Osc1__->setLFO_Pw_intensity(coef);
+    __Osc2__->setLFO_Pw_intensity(coef);
+}
+void SetLfoRate(double coef){
+    __LFO__->setFreq(coef);
+}
+
+void SetDetune(double coef){
+    __Osc2__->setDetune(coef);
 }

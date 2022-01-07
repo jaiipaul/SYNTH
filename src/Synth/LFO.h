@@ -9,11 +9,12 @@ class LFO{
 private:
     int waveForm;
     float Frequency;
-    float maxFreq = 100.0;
+    float maxFreq = 5.0;
     float minFreq = 0.0;
-    unsigned long sampleRate;
+    float sampleRate;
 
     int   t;
+    float time;
     float value;
     bool keySync;
     Keyboard* keyboard;

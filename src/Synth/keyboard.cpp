@@ -16,62 +16,62 @@ void Keyboard::Update(){
     if(Gui::event.type == SDL_KEYDOWN){
         switch (Gui::event.key.keysym.sym){
             case SDLK_q:
-                note = pow(2.0f, 1.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 0.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_z:
-                note = pow(2.0f, 2.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 1.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_s:
-                note = pow(2.0f, 3.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 2.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_e:
-                note = pow(2.0f, 4.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 3.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_d:
-                note = pow(2.0f, 5.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 4.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_f:
-                note = pow(2.0f, 6.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 5.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_t:
-                note = pow(2.0f, 7.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 6.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_g:
-                note = pow(2.0f, 8.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 7.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_y:
-                note = pow(2.0f, 9.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 8.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_h:
-                note = pow(2.0f, 10.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 9.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_u:
-                note = pow(2.0f, 11.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 10.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;
             case SDLK_j:
-                note = pow(2.0f, 12.0f/12.0f) * pow(2, octave) * pow(2, baseOctave);
+                note = pow(2.0f, 11.0f/12.0f) * pow(2, octave);
                 Trigger = !Gate ? true : false;
                 Gate = true;
                 break;

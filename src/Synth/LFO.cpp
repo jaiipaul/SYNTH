@@ -14,17 +14,17 @@ LFO::~LFO(){
 
 void LFO::init(int _waveForm, unsigned long _sampleRate){
     waveForm = _waveForm;
-    sampleRate = _sampleRate;
+    sampleRate = (float)_sampleRate;
     Frequency = 0.0;
-    keySync = true;
+    keySync = false;
     value = 0;
 }
 
 void LFO::init(int _waveForm, unsigned long _sampleRate, Keyboard* _keyboard){
     waveForm = _waveForm;
-    sampleRate = _sampleRate;
+    sampleRate =(float) _sampleRate;
     Frequency = 0.0;
-    keySync  = true;
+    keySync  = false;
     value = 0;
     keyboard = _keyboard;
 }
@@ -34,33 +34,29 @@ void LFO::generateWave(){
     
     switch(waveForm){
         case 0: /*SAW*/
-            value += Frequency/(double)sampleRate;
-            if( value >= 1.0f ) value -= 2.0f;
+            value  = time*2.f-1.f;
             break;
         case 1: /*TRIANGLE*/
-            if(t < (double)sampleRate/(4.f*Frequency)){
-                value  += Frequency/(double)sampleRate;
-            }else if(t >= (double)sampleRate/(4.f*Frequency) && 
-                     t < (3.f*(double)sampleRate)/(4.f*Frequency)){
-                value  -= Frequency/(double)sampleRate;
-            }else{
-                value  += Frequency/(double)sampleRate;
-            }
+            value  = 1.f-fabs(time-0.5)*4.f;
             break;
         case 2: /*SQUARE*/
-            if(t < (0.5f*(double)sampleRate/Frequency)){
+            if(t < (sampleRate/Frequency)){
             value = 1.0f;
             }else{
             value = -1.0f;
             }
             break;
+        case 3: /*SINE*/
+            value = sin(2.f*PI*time);
     }
 
-    if(t < (double)sampleRate/Frequency){
-        t++;
-    }else{
-        t = 0;
-    }  
+    // if((Data->t) < sampleRate/Frequency){
+        // Data->t++;
+    // }else{
+        // Data->t = 0;
+    // }
+    t++;
+    time = fmod(Frequency*(float)t/sampleRate,1.0);
 }
 
 float LFO::getValue(){

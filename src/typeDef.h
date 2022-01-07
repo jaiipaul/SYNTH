@@ -18,7 +18,7 @@ typedef struct
 PaData;
 
 #define PI 3.141592653589793
-#define Vt 0.025
+#define Vt 0.312
 
 
 #endif // _TYPEDEF_H_
