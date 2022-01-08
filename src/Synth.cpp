@@ -9,7 +9,6 @@
 #include "keyboard.h"
 #include <vector>
 
-
 static AudioEngine* __audioEngine__ = new AudioEngine();
 static Mixer* __Mix__ = new Mixer();
 static std::vector<Oscillator*> Oscillators;
@@ -184,6 +183,7 @@ void Synth::buildSynthGui(){
 }
 
 void Synth::buildSynthModules(){
+
     __keyboard__ = new Keyboard();
     __Osc1__->init(2, 3, sampleRate, __keyboard__);
     __Osc2__->init(2, 3, sampleRate, __keyboard__);

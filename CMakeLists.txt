@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 project("SYNTH" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(OUTPUT_DIR "../bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#set(OUTPUT_DIR "../bin")
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 set(BUILD_DIR
     "${PROJECT_SOURCE_DIR}/build/")
@@ -44,7 +47,7 @@ set(INCLUDES
 add_subdirectory(${EXTERNALS}/SDL)
 add_subdirectory(${EXTERNALS}/SDL_image)
 add_subdirectory(${EXTERNALS}/portaudio)
-add_subdirectory(${EXTERNALS}/libremidi)
+add_subdirectory(${EXTERNALS}/rtmidi)
 
 add_executable(
     SYNTH
@@ -57,12 +60,13 @@ target_include_directories(
     PUBLIC ${EXTERNALS}/SDL/include/
     PUBLIC ${EXTERNALS}/SDL_image/
     PUBLIC ${EXTERNALS}/portaudio/include/
-    PUBLIC ${EXTERNALS}/libremidi/include/
+    PUBLIC ${EXTERNALS}/rtmidi
 )
 
 target_link_directories(
     SYNTH
     #add directories where libs are
+    PRIVATE ${BUILD_DIR}/ext/rtmidi/Release/
     PRIVATE ${BUILD_DIR}/ext/portaudio/Release/
     PRIVATE ${BUILD_DIR}/ext/SDL/Release
     PRIVATE ${BUILD_DIR}/ext/SDL_image/Release
@@ -71,6 +75,7 @@ target_link_directories(
 target_link_libraries(
     SYNTH 
     #add librairies here
+    PUBLIC rtmidi.lib
     PUBLIC portaudio.lib
     PUBLIC SDL2.lib
     PUBLIC SDL2main.lib
@@ -78,21 +83,21 @@ target_link_libraries(
     )
 
 
-set_target_properties( 
-    SYNTH PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
-)
+#set_target_properties( 
+#    SYNTH PROPERTIES
+#    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
+#)
 
 
-add_custom_command(TARGET SYNTH POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${BUILD_DIR}/ext/SDL/Release/SDL2.dll
-    ${BUILD_DIR}/ext/SDL_image/Release/SDL2_image.dll
-    ${BUILD_DIR}/ext/SDL_image/external/libpng-1.6.37/Release/libpng16.dll
-    ${BUILD_DIR}/ext/SDL_image/external/zlib-1.2.11/Release/zlib1.dll
-    ${BUILD_DIR}/ext/portaudio/Release/portaudio.dll
-    ${BUILD_DIR}/ext/libremidi/Release/libremidi.dll
-    $<TARGET_FILE_DIR:SYNTH>)
+#add_custom_command(TARGET SYNTH POST_BUILD
+#COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#    ${BUILD_DIR}/ext/SDL/Release/SDL2.dll
+#    ${BUILD_DIR}/ext/SDL_image/Release/SDL2_image.dll
+#    ${BUILD_DIR}/ext/SDL_image/external/libpng-1.6.37/Release/libpng16.dll
+#    ${BUILD_DIR}/ext/SDL_image/external/zlib-1.2.11/Release/zlib1.dll
+#    ${BUILD_DIR}/ext/portaudio/Release/portaudio.dll
+#    ${BUILD_DIR}/ext/rtmidi/Release/rtmidi.dll
+#    $<TARGET_FILE_DIR:SYNTH>)
 
 
 

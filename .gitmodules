@@ -7,6 +7,4 @@
 [submodule "ext/portaudio"]
 	path = ext/portaudio
 	url = https://github.com/PortAudio/portaudio.git
-[submodule "ext/libremidi"]
-	path = ext/libremidi
-	url = https://github.com/jcelerier/libremidi.git
+
