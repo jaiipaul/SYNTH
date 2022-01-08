@@ -8,6 +8,7 @@
 #include "LFO.h"
 #include "keyboard.h"
 #include <vector>
+#include <libremidi/libremidi.hpp>
 
 static AudioEngine* __audioEngine__ = new AudioEngine();
 static Mixer* __Mix__ = new Mixer();
@@ -105,59 +106,61 @@ void Synth::buildSynthGui(){
     sliderFunc setResonance    = &(SetResonance);
     buttonFunc switchWaveForm  = &(SwitchWaveForm);
     sliderFunc setFreqMod      = &(SetFreqMod);
-    sliderFunc setPwMod      = &(SetPwMod);
+    sliderFunc setPwMod        = &(SetPwMod);
     sliderFunc setLfoRate      = &(SetLfoRate);
     sliderFunc setDetune       = &(SetDetune);
 
-    Button* button1 = new Button(renderer, 10, 10, 64, 16, "../../assets/button.png");
+    const char* buttonTextPath = "../../../assets/button.png";
+
+    Button* button1 = new Button(renderer, 10, 10, 64, 16, buttonTextPath);
     button1->setFunction(startStream);
-    Button* button2 = new Button(renderer, 10, 36, 64, 16, "../../assets/button.png");
+    Button* button2 = new Button(renderer, 10, 36, 64, 16, buttonTextPath);
     button2->setFunction(stopStream);
-    Button* button3 = new Button(renderer, 10, 62, 64, 16, "../../assets/button.png");
+    Button* button3 = new Button(renderer, 10, 62, 64, 16, buttonTextPath);
     button3->setFunction(listDevices);
     // AMP sliders
-    Slider* slider1 = new Slider(renderer, 100, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider1 = new Slider(renderer, 100, 200, 32, 8, 100, buttonTextPath);
     slider1->setFunction(setVolume);
-    Slider* slider2 = new Slider(renderer, 150, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider2 = new Slider(renderer, 150, 200, 32, 8, 100, buttonTextPath);
     slider2->setFunction(setEnvLvl);
     // AR Sliders
-    Slider* slider3 = new Slider(renderer, 250, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider3 = new Slider(renderer, 250, 200, 32, 8, 100, buttonTextPath);
     slider3->setFunction(setAR_Attack);
-    Slider* slider4 = new Slider(renderer, 300, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider4 = new Slider(renderer, 300, 200, 32, 8, 100, buttonTextPath);
     slider4->setFunction(setAR_Release);
     // ADSR Sliders
-    Slider* slider5 = new Slider(renderer, 400, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider5 = new Slider(renderer, 400, 200, 32, 8, 100, buttonTextPath);
     slider5->setFunction(setADSR_Attack);
-    Slider* slider6 = new Slider(renderer, 450, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider6 = new Slider(renderer, 450, 200, 32, 8, 100, buttonTextPath);
     slider6->setFunction(setADSR_Decay);
-    Slider* slider7 = new Slider(renderer, 500, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider7 = new Slider(renderer, 500, 200, 32, 8, 100, buttonTextPath);
     slider7->setFunction(setADSR_Sustain);
-    Slider* slider8 = new Slider(renderer, 550, 200, 32, 8, 100, "../../assets/button.png");
+    Slider* slider8 = new Slider(renderer, 550, 200, 32, 8, 100, buttonTextPath);
     slider8->setFunction(setADSR_Release);
     // ENV selector
-    Button* button4 = new Button(renderer, 250, 150, 64, 16, "../../assets/button.png");
+    Button* button4 = new Button(renderer, 250, 150, 64, 16, buttonTextPath);
     button4->setFunction(switchEnvType);
     //Filter 
-    Slider* slider9 = new Slider(renderer, 550, 50, 32, 8, 100, "../../assets/button.png");
+    Slider* slider9 = new Slider(renderer, 550, 50, 32, 8, 100, buttonTextPath);
     slider9->setFunction(setCutoff);
-    Slider* slider10 = new Slider(renderer, 600, 50, 32, 8, 100, "../../assets/button.png");
+    Slider* slider10 = new Slider(renderer, 600, 50, 32, 8, 100, buttonTextPath);
     slider10->setFunction(setResonance);
 
     // Osc
-    Slider* slider11 = new Slider(renderer, 350, 50, 32, 8, 100, "../../assets/button.png");
+    Slider* slider11 = new Slider(renderer, 350, 50, 32, 8, 100, buttonTextPath);
     slider11->setFunction(setPulseWidth);
-    Button* button5 = new Button(renderer, 250, 75, 64, 16, "../../assets/button.png");
+    Button* button5 = new Button(renderer, 250, 75, 64, 16, buttonTextPath);
     button5->setFunction(switchWaveForm);
-    Slider* slider12 = new Slider(renderer, 150, 350, 32, 8, 100, "../../assets/button.png");
+    Slider* slider12 = new Slider(renderer, 150, 350, 32, 8, 100, buttonTextPath);
     slider12->setFunction(setFreqMod);
-    Slider* slider13 = new Slider(renderer, 200, 350, 32, 8, 100, "../../assets/button.png");
+    Slider* slider13 = new Slider(renderer, 200, 350, 32, 8, 100, buttonTextPath);
     slider13->setFunction(setPwMod);
 
     //LFO
-    Slider* slider14 = new Slider(renderer, 100, 350, 32, 8, 100, "../../assets/button.png");
+    Slider* slider14 = new Slider(renderer, 100, 350, 32, 8, 100, buttonTextPath);
     slider14->setFunction(setLfoRate);
 
-    Slider* slider15 = new Slider(renderer, 300, 350, 32, 8, 100, "../../assets/button.png");
+    Slider* slider15 = new Slider(renderer, 300, 350, 32, 8, 100, buttonTextPath);
     slider15->setFunction(setDetune);
 
     addWidget(button1);
@@ -183,7 +186,9 @@ void Synth::buildSynthGui(){
 }
 
 void Synth::buildSynthModules(){
-
+    libremidi::midi_in midiin;
+    auto nPorts = midiin.get_port_count();
+    std::cout << "\nThere are " << nPorts << " MIDI input sources available.\n";
     __keyboard__ = new Keyboard();
     __Osc1__->init(2, 3, sampleRate, __keyboard__);
     __Osc2__->init(2, 3, sampleRate, __keyboard__);

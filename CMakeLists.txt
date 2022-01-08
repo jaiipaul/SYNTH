@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 project("SYNTH" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #set(OUTPUT_DIR "../bin")
-option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+
 
 set(BUILD_DIR
     "${PROJECT_SOURCE_DIR}/build/")
@@ -47,7 +47,7 @@ set(INCLUDES
 add_subdirectory(${EXTERNALS}/SDL)
 add_subdirectory(${EXTERNALS}/SDL_image)
 add_subdirectory(${EXTERNALS}/portaudio)
-add_subdirectory(${EXTERNALS}/rtmidi)
+add_subdirectory(${EXTERNALS}/libremidi)
 
 add_executable(
     SYNTH
@@ -60,13 +60,13 @@ target_include_directories(
     PUBLIC ${EXTERNALS}/SDL/include/
     PUBLIC ${EXTERNALS}/SDL_image/
     PUBLIC ${EXTERNALS}/portaudio/include/
-    PUBLIC ${EXTERNALS}/rtmidi
+    PUBLIC ${EXTERNALS}/libremidi/include
 )
 
 target_link_directories(
     SYNTH
     #add directories where libs are
-    PRIVATE ${BUILD_DIR}/ext/rtmidi/Release/
+    PRIVATE ${BUILD_DIR}/ext/libremidi/Release/
     PRIVATE ${BUILD_DIR}/ext/portaudio/Release/
     PRIVATE ${BUILD_DIR}/ext/SDL/Release
     PRIVATE ${BUILD_DIR}/ext/SDL_image/Release
@@ -75,10 +75,11 @@ target_link_directories(
 target_link_libraries(
     SYNTH 
     #add librairies here
-    PUBLIC rtmidi.lib
+    PUBLIC winmm.lib
+    PUBLIC libremidi.lib
     PUBLIC portaudio.lib
-    PUBLIC SDL2.lib
     PUBLIC SDL2main.lib
+    PUBLIC SDL2.lib
     PUBLIC SDL2_image.lib
     )
 
