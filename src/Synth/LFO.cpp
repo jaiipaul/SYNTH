@@ -16,7 +16,7 @@ void LFO::init(int _waveForm, unsigned long _sampleRate){
     waveForm = _waveForm;
     sampleRate = (float)_sampleRate;
     Frequency = 0.0;
-    keySync = false;
+    keySync = true;
     value = 0;
 }
 
@@ -24,7 +24,7 @@ void LFO::init(int _waveForm, unsigned long _sampleRate, Keyboard* _keyboard){
     waveForm = _waveForm;
     sampleRate =(float) _sampleRate;
     Frequency = 0.0;
-    keySync  = false;
+    keySync  = true;
     value = 0;
     keyboard = _keyboard;
 }

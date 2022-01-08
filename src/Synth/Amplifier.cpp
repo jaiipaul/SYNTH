@@ -17,9 +17,9 @@ void Amplifier::init(unsigned long sampleRate, Keyboard* _keyboard){
 
     EnvType = 0;
     AR = new AR_envelop();
-    AR->init(sampleRate);
+    AR->init(sampleRate, _keyboard);
     ADSR = new ADSR_envelop();
-    ADSR->init(sampleRate);
+    ADSR->init(sampleRate, _keyboard);
 }
     
 void Amplifier::genOutput(PaData* Data){
@@ -35,13 +35,13 @@ void Amplifier::genOutput(PaData* Data){
             break;
         
         case 1: /*AR*/
-            AR->Update(keyboard->getGate(), keyboard->getTrigger());
+            AR->Update();
             Data->left_phase  = AR->getAR_Coef()*envelop_level*volume*Data->left_phase;
             Data->right_phase = AR->getAR_Coef()*envelop_level*volume*Data->right_phase;
             break;
         
         case 2: /*ADSR*/
-            ADSR->Update(keyboard->getGate(), keyboard->getTrigger());
+            ADSR->Update();
             Data->left_phase  = ADSR->getADSR_Coef()*envelop_level*volume*Data->left_phase;
             Data->right_phase = ADSR->getADSR_Coef()*envelop_level*volume*Data->right_phase;
             break;

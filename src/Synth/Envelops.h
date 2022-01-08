@@ -3,6 +3,8 @@
 
 #include "typeDef.h"
 
+class Keyboard;
+
 class AR_envelop{
 private:
     int attackEch, releaseEch;
@@ -13,14 +15,15 @@ private:
     unsigned long sampleRate;
 
     float ARcoef;
-
+    Keyboard* keyboard;
+    
 public:
     AR_envelop();
     ~AR_envelop();
 
-    void init(unsigned long _sampleRate);
+    void init(unsigned long _sampleRate, Keyboard* _keyboard);
 
-    void Update(bool Gate, bool Trigger);
+    void Update();
 
     float getAR_Coef();
 
@@ -42,13 +45,15 @@ private:
     float ADSRcoef;
     int t;
 
+    Keyboard* keyboard;
+
 public:
     ADSR_envelop();
     ~ADSR_envelop();
 
-    void init(unsigned long _sampleRate);
+    void init(unsigned long _sampleRate, Keyboard* _keyboard);
 
-    void Update(bool Gate, bool Trigger);
+    void Update();
 
     float getADSR_Coef();
 

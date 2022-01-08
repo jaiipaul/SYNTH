@@ -2,17 +2,75 @@
 #include "SDL.h"
 #include "gui.h"
 #include <math.h>
+#include <iostream>
+#include <stdio.h>
+
 Keyboard::Keyboard(){
-    octave = 3;
-    Gate    = false;
-    Trigger = false;
+    
 }
 
 Keyboard::~Keyboard(){
 
 }
 
+void Keyboard::init(bool midi){
+    midiIn = new libremidi::midi_in();
+    if(midi && (midiIn->get_port_count() > 0)){
+        std::cout << "Midi : " << midiIn->get_port_count() << " ports available" << std::endl;
+        midiPort = 0;
+        midiIn->open_port(midiPort);
+    }else{
+        std::cout << "No midi ports available" << std::endl;
+    }
+
+    octave = 3;
+    Gate    = false;
+    Trigger = false;
+}
+
 void Keyboard::Update(){
+    if(midiIn->is_port_open()){
+        MidiUpdate();
+    }else{
+        KeyUpdate();
+    }
+}
+
+void Keyboard::MidiUpdate(){
+    libremidi::message messageIn;
+    if(midiIn->get_message(messageIn)){
+        printf("%x\n", messageIn.bytes[0]);
+        float mod = fmod((float)messageIn.bytes[1], 12.f);
+        float oct = messageIn.bytes[1]/ 12;
+        printf("mod : %f | oct : %f\n", mod, oct);
+        switch (messageIn.bytes[0]){
+            case 0x90:
+                note = pow(2.0f, (fmod((float)messageIn.bytes[1], 12.f)/12.0f)) * pow(2, (int)messageIn.bytes[1]/12);
+                std::cout << "Trig ON" << std::endl;
+                Trigger = !Gate ? true : false;
+                Gate = true;
+                break;
+            
+            case 0x80:
+                Gate = false;
+                Trigger = false;
+                break;
+            
+        }
+        
+        printf("%f\n", note); 
+    
+        //for(auto b : messageIn.bytes){
+        //    printf("%x | ", b);
+        //}
+        //printf("\n");        
+    }else if(Trigger){
+        Trigger = false;
+        std::cout << "Trig OFF" << std::endl;
+    }
+}
+
+void Keyboard::KeyUpdate(){
     if(Gui::event.type == SDL_KEYDOWN){
         switch (Gui::event.key.keysym.sym){
             case SDLK_q:
@@ -153,4 +211,13 @@ bool Keyboard::getGate(){
 
 bool Keyboard::getTrigger(){
     return Trigger;
+}
+
+void Keyboard::setMidiPort(int port){
+    if(port <= midiIn->get_port_count()-1){
+        midiPort = port;
+        midiIn->open_port(midiPort);
+    }else{
+        std::cout << "Port not available" << std::endl;
+    } 
 }
