@@ -1,45 +1,30 @@
+#include <vector>
+
 #include "Synth.h"
 #include "Widgets.h"
-#include "Mixer.h"
-#include "Oscillator.h"
-#include "Amplifier.h"
-#include "Envelops.h"
-#include "LadderFilter.h"
-#include "LFO.h"
-#include "keyboard.h"
-#include <vector>
-#include <libremidi/libremidi.hpp>
+#include "Modules.h"
+#include "SynthControls.h"
 
+//////// SYNTH MODULES ////////
+/* AUDIO ENGINE */
 static AudioEngine* __audioEngine__ = new AudioEngine();
+/* MIXER */
 static Mixer* __Mix__ = new Mixer();
+/* OSCILLATORS */
 static std::vector<Oscillator*> Oscillators;
 static Oscillator* __Osc1__ = new Oscillator();
 static Oscillator* __Osc2__ = new Oscillator();
+
+/* VCA */
 static Amplifier*  __Amp__ = new Amplifier();
-static LadderFilter* __Filter__  = new LadderFilter();
+/* VCF */
+static LadderFilter* __Filter__ = new LadderFilter();
+/* LFOs */
 static LFO* __LFO__ = new LFO();
 
-void StartStream();
-void StopStream();
-void ListDevices();
-void SetPulseWidth(double coef);
-void SetVolume(double coef);
-void SetEnvLvl(double coef);
-void SetAR_Attack(double coef);
-void SetAR_Release(double coef);
-void SetADSR_Attack(double coef);
-void SetADSR_Decay(double coef);
-void SetADSR_Sustain(double coef);
-void SetADSR_Release(double coef);
-void SwitchEnvType();
-void SetCutoff(double coef);
-void SetResonance(double coef);
-void SwitchWaveForm();
-void SetFreqMod(double coef);
-void SetPwMod(double coef);
-void SetLfoRate(double coef);
-void SetDetune(double coef);
 
+
+//////// SYNTH CLASS DEFINITION /////////
 Synth::Synth(){
 
 }
@@ -63,8 +48,8 @@ int Synth::Callback( const void *inputBuffer, void *outputBuffer,
     {   
 
         SynthOutput(__Mix__, __Filter__, __LFO__, __Amp__, callbackData);
-        out[2*i]   = callbackData->left_phase;  /* left */
-        out[2*i+1] = callbackData->right_phase; /* right */
+        out[2*i]   = 0.5*(callbackData->left_phase < 1.f)  ? callbackData->left_phase  : 1.f;  /* left */
+        out[2*i+1] = 0.5*(callbackData->right_phase < 1.f) ? callbackData->right_phase : 1.f; /* right */
     }
     return 0;
 }
@@ -87,14 +72,54 @@ void Synth::initSynth(const char* _name, int _width, int _height, bool fullscree
     std::cout << "Built Modules..." << std::endl;
 }
 
+void Synth::update(){
+    for(auto w : Widgets){
+        w->Update();
+    }
+    __keyboard__->Update();
+}   
 
+void Synth::clean(){
+    __audioEngine__->clean();
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_Quit();
+    std::cout << "Synth cleaned!..." << std::endl;
+}
+
+/////// SYNTH MODULES INITILISATION ////////
+void Synth::buildSynthModules(){
+    __keyboard__ = new Keyboard();
+    __keyboard__->init(true);
+
+    __Osc1__->init(2, 3, sampleRate, __keyboard__);
+    __Osc2__->init(2, 3, sampleRate, __keyboard__);
+    Oscillators.push_back(__Osc1__);
+    Oscillators.push_back(__Osc2__);
+    __Mix__->init(2);
+    __Amp__->init(sampleRate, __keyboard__);
+    __Filter__->init(96000.f);
+    __LFO__->init(3, sampleRate, __keyboard__);
+    __Osc1__->setLFO(__LFO__);
+    __Osc2__->setLFO(__LFO__);
+}
+
+/////// SYNTH SOUND PATH ///////
+void Synth::SynthOutput(Mixer* Mix, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp, PaData* Data){
+    __LFO__->generateWave();
+    __Mix__->generateOutput(Data, Oscillators);
+    __Filter__->genOutput(Data);
+    __Amp__->genOutput(Data);
+}
+
+////////  SYNTH GUI /////////
 void Synth::buildSynthGui(){
-    buttonFunc startStream  = &StartStream;
-    buttonFunc stopStream   = &(StopStream);
-    buttonFunc listDevices  = &(ListDevices);
-    sliderFunc setPulseWidth = &(SetPulseWidth);
-    sliderFunc setVolume    = &(SetVolume);
-    sliderFunc setEnvLvl    = &(SetEnvLvl);
+    buttonFunc startStream     = &(StartStream);
+    buttonFunc stopStream      = &(StopStream);
+    buttonFunc listDevices     = &(ListDevices);
+    sliderFunc setPulseWidth   = &(SetPulseWidth);
+    sliderFunc setVolume       = &(SetVolume);
+    sliderFunc setEnvLvl       = &(SetEnvLvl);
     sliderFunc setAR_Attack    = &(SetAR_Attack);
     sliderFunc setAR_Release   = &(SetAR_Release);
     sliderFunc setADSR_Attack  = &(SetADSR_Attack);
@@ -111,6 +136,7 @@ void Synth::buildSynthGui(){
     sliderFunc setDetune       = &(SetDetune);
 
     const char* buttonTextPath = "../../../assets/button.png";
+    const char* buttonPurple = "../../../assets/button_purple.png";
 
     Button* button1 = new Button(renderer, 10, 10, 64, 16, buttonTextPath);
     button1->setFunction(startStream);
@@ -138,7 +164,7 @@ void Synth::buildSynthGui(){
     Slider* slider8 = new Slider(renderer, 550, 200, 32, 8, 100, buttonTextPath);
     slider8->setFunction(setADSR_Release);
     // ENV selector
-    Button* button4 = new Button(renderer, 250, 150, 64, 16, buttonTextPath);
+    Button* button4 = new Button(renderer, 250, 150, 50, 50, buttonPurple);
     button4->setFunction(switchEnvType);
     //Filter 
     Slider* slider9 = new Slider(renderer, 550, 50, 32, 8, 100, buttonTextPath);
@@ -163,70 +189,30 @@ void Synth::buildSynthGui(){
     Slider* slider15 = new Slider(renderer, 300, 350, 32, 8, 100, buttonTextPath);
     slider15->setFunction(setDetune);
 
-    addWidget(button1);
-    addWidget(button2);
-    addWidget(button3);
-    addWidget(slider1);
-    addWidget(slider2);
-    addWidget(slider3);
-    addWidget(slider4);
-    addWidget(slider5);
-    addWidget(slider6);
-    addWidget(slider7);
-    addWidget(slider8);
-    addWidget(button4);
-    addWidget(slider9);
-    addWidget(slider10);
-    addWidget(slider11);
-    addWidget(button5);
-    addWidget(slider12);
-    addWidget(slider13);
-    addWidget(slider14);
-    addWidget(slider15);
+    Widgets.push_back(button1);
+    Widgets.push_back(button2);
+    Widgets.push_back(button3);
+    Widgets.push_back(slider1);
+    Widgets.push_back(slider2);
+    Widgets.push_back(slider3);
+    Widgets.push_back(slider4);
+    Widgets.push_back(slider5);
+    Widgets.push_back(slider6);
+    Widgets.push_back(slider7);
+    Widgets.push_back(slider8);
+    Widgets.push_back(button4);
+    Widgets.push_back(slider9);
+    Widgets.push_back(slider10);
+    Widgets.push_back(slider11);
+    Widgets.push_back(button5);
+    Widgets.push_back(slider12);
+    Widgets.push_back(slider13);
+    Widgets.push_back(slider14);
+    Widgets.push_back(slider15);
 }
 
-void Synth::buildSynthModules(){
-    libremidi::midi_in midiin;
-    auto nPorts = midiin.get_port_count();
-    std::cout << "\nThere are " << nPorts << " MIDI input sources available.\n";
-    __keyboard__ = new Keyboard();
-    __Osc1__->init(2, 3, sampleRate, __keyboard__);
-    __Osc2__->init(2, 3, sampleRate, __keyboard__);
-    std::cout << "Built Oscs..." << std::endl;
-    Oscillators.push_back(__Osc1__);
-    Oscillators.push_back(__Osc2__);
-    std::cout << "Stored Osc..." << std::endl;
-    __Mix__->init(2);
-    std::cout << "Built Mixer..." << std::endl;
-    __Amp__->init(sampleRate, __keyboard__);
-    __Filter__->init(96000.f);
-    __LFO__->init(3, 44100, __keyboard__);
-    __Osc1__->setLFO(__LFO__);
-    __Osc2__->setLFO(__LFO__);
-}
 
-void Synth::SynthOutput(Mixer* Mix, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp, PaData* Data){
-    Lfo->generateWave();
-    Mix->generateOutput(Data, Oscillators);
-    Filt->genOutput(Data);
-    Amp->genOutput(Data);
-}
-
-void Synth::update(){
-    for(auto w : Widgets){
-        w->Update();
-    }
-    __keyboard__->Update();
-}   
-
-void Synth::clean(){
-    __audioEngine__->clean();
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
-    SDL_Quit();
-    std::cout << "Synth cleaned!..." << std::endl;
-}
-
+///////// SYNTH CONTROLS /////////
 // AUDIO ENGINE 
 void StartStream(){
     std::cout << "synth start stream" << std::endl;
@@ -300,7 +286,9 @@ void SetPwMod(double coef){
     Oscillators[1]->setLFO_Pw_intensity(coef);
 }
 void SetLfoRate(double coef){
+    std::cout << "set Lfo Rate" << std::endl;
     __LFO__->setFreq(coef);
+    std::cout << "set Lfo Rate" << std::endl;
 }
 
 void SetDetune(double coef){

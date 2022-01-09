@@ -12,14 +12,12 @@ set(BUILD_DIR
 set(SOURCES_DIR        
     "${PROJECT_SOURCE_DIR}/src/")
 set(SOURCES
-    ${SOURCES_DIR}/main.cpp
-    ${SOURCES_DIR}/Synth.cpp
     #Graphics Sources
     ${SOURCES_DIR}/GUI/gui.cpp
     ${SOURCES_DIR}/GUI/Widget.cpp
     ${SOURCES_DIR}/GUI/Button.cpp
     ${SOURCES_DIR}/GUI/Slider.cpp
-    #SYNTH/Synthesizer Sources
+    #Synthesizer Sources
     ${SOURCES_DIR}/Synth/audioEngine.cpp
     ${SOURCES_DIR}/Synth/Oscillator.cpp
     ${SOURCES_DIR}/Synth/keyboard.cpp
@@ -29,6 +27,9 @@ set(SOURCES
     ${SOURCES_DIR}/Synth/LadderFilter.cpp
     ${SOURCES_DIR}/Synth/LFO.cpp
     ${SOURCES_DIR}/Synth/Mixer.cpp
+
+    ${SOURCES_DIR}/main.cpp
+    ${SOURCES_DIR}/Synth.cpp
 )
 
 set(EXTERNALS

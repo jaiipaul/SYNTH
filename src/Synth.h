@@ -2,14 +2,9 @@
 #define _SYNTH_H_
 
 #include "gui.h"
-#include "audioEngine.h"
-
-class Keyboard;
-class Oscillator;
-class Mixer;
-class Amplifier;
-class LadderFilter;
-class LFO;
+#include "portaudio.h"
+#include "typeDef.h"
+#include "Modules.h"
 
 class Synth : public Gui{
 private:

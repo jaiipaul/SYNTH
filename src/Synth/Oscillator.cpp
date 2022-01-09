@@ -2,6 +2,7 @@
 #include "LFO.h"
 #include "keyboard.h"
 #include <iostream>
+#include <math.h>
 
 Oscillator::Oscillator(){
     Frequency = 1000.0;

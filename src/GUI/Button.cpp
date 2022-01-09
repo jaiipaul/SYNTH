@@ -11,8 +11,8 @@ Button::Button(){
 Button::Button(SDL_Renderer *_renderer, int _x_pos, int _y_pos, int _width, int _height, const char* texturePath){
     srcRect.x = 0;
     srcRect.y = 0;
-    srcRect.w = 64;
-    srcRect.h = 16;
+    srcRect.w = 50;
+    srcRect.h = 50;
 
     dstRect.x  = _x_pos;
     dstRect.y  = _y_pos;
@@ -42,12 +42,12 @@ void Button::Update(){
         && mouseX < dstRect.x + dstRect.w 
         && mouseY < dstRect.y + dstRect.h ){
         
-        if(!clicked) srcRect.x = 64;
+        if(!clicked) srcRect.x = 0;
         //std::cout << "Mouse on button" << std::endl;
 
         if(Gui::event.type == SDL_MOUSEBUTTONDOWN && Gui::event.button.button == SDL_BUTTON_LEFT){
             clicked = true;
-            srcRect.x = 2*64;
+            srcRect.x = 50;
             std::cout << "button clicked" << std::endl;
             func();
         }
