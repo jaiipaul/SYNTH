@@ -1,6 +1,7 @@
 #include "LFO.h"
 #include "keyboard.h"
 #include <iostream>
+#include <math.h>
 
 LFO::LFO(){
     Frequency = 1000.0;
