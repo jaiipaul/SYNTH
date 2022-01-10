@@ -15,6 +15,7 @@ private:
     int EnvType;
     float envelop_level;
 
+    
 public:
     AR_envelop* AR; 
     ADSR_envelop* ADSR;
@@ -29,6 +30,9 @@ public:
     void setEnvelopLevel(double coef);
     void switchEnvelopType();
     void setEnvelopType(int type);
+
+    void bindAR(AR_envelop* _AR);
+    void bindADSR(ADSR_envelop* _ADSR);
 };
 
 #endif //_AMPLIFIER_H_

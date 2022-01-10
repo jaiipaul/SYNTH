@@ -1,4 +1,7 @@
 #include "LadderFilter.h"
+#include "Envelops.h"
+#include "LFO.h"
+#include "keyboard.h"
 #include <stdlib.h>
 #include <iostream>
 #include <math.h>
@@ -24,10 +27,14 @@ void LadderFilter::init(unsigned long _sampleRate){
         StageOutputs[stage] = 0.f;
         StageFeedbacks[stage] = 0.f;
     }
-    ComputeCoef();
+    LFO_linked = false;
+    AR_linked  = false;
+    ADSR_linked = false;
+    ENV_type = 0;
 }
 
 void LadderFilter::genOutput(PaData* Data){
+    ComputeCoef();
     /* Copyright 2012 Stefano D'Angelo <zanga.mail@gmail.com> */ 
     double X = Data->left_phase + 4*resonance*StageOutputs[3];
 
@@ -72,13 +79,16 @@ void LadderFilter::genOutput(PaData* Data){
 
 void LadderFilter::ComputeCoef(){
     float x = (PI * cutoff)/sampleRate;
-    G = 4.f * PI * Vt * cutoff * (1.f - x)/(1.f + x);
+    float Env = ENV_intensity * ((ENV_type == 0) ? AR->getAR_Coef() : ADSR->getADSR_Coef());
+    float Mod = LFO_intensity * maxCutoffMod * Lfo->getValue();
+    float w0 =  (2.f * PI * (cutoff + Mod)) * Env ;
+
+    G = 2.f * Vt * cutoff * (1.f - x)/(1.f + x);
 }
 
 void LadderFilter::setCutoff(double coef){
     cutoff = (coef >= 0.f && coef <= 1.f) ? coef*maxCutoff : maxCutoff;
-    ComputeCoef();
-    std::cout << "Filter Cutoff : " << cutoff  << "("<<G<<")"<< std::endl;
+    std::cout << "Filter Cutoff : " << cutoff  << std::endl;
 }
 
 void LadderFilter::setResonance(double coef){
@@ -86,6 +96,21 @@ void LadderFilter::setResonance(double coef){
     std::cout << "Filter Resonance : " << resonance << std::endl;
 }
 
-float Tanh(float X){
-    return( (float)tanh(X) );
-}
+void LadderFilter::bindLFO(LFO* _Lfo){
+    Lfo = _Lfo;
+};
+void LadderFilter::setLFOintensity(double coef){
+    LFO_intensity = (float)coef;
+};
+
+void LadderFilter::bindAR(AR_envelop* _AR){
+    AR = _AR;
+    AR_linked = true;
+};
+void LadderFilter::bindADSR(ADSR_envelop* _ADSR){
+    ADSR = _ADSR;
+    ADSR_linked = true;
+};
+void LadderFilter::setENVintensity(double coef){
+    ENV_intensity = (float)coef;
+};

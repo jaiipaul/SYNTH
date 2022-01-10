@@ -65,7 +65,7 @@ float Oscillator::generateWave(){
     return(value);  
 }
 
-void Oscillator::setLFO(LFO* _oscLFO){
+void Oscillator::bindLFO(LFO* _oscLFO){
     oscLFO = _oscLFO;
     oscLFO_linked = true;
 }

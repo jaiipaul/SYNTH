@@ -16,10 +16,6 @@ void Amplifier::init(unsigned long sampleRate, Keyboard* _keyboard){
     envelop_level = 1.0f;
 
     EnvType = 0;
-    AR = new AR_envelop();
-    AR->init(sampleRate, _keyboard);
-    ADSR = new ADSR_envelop();
-    ADSR->init(sampleRate, _keyboard);
 }
     
 void Amplifier::genOutput(PaData* Data){
@@ -89,4 +85,12 @@ void Amplifier::setEnvelopType(int type){
             std::cout << "Amp envelop type : ADSR" << std::endl;
             break;
     } 
+}
+
+void Amplifier::bindAR(AR_envelop* _AR){
+    AR = _AR;
+}
+
+void Amplifier::bindADSR(ADSR_envelop* _ADSR){
+    ADSR = _ADSR;
 }

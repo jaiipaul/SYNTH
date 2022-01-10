@@ -40,9 +40,10 @@ public:
     void init(int _waveForm, int _octave, unsigned long _sampleRate, Keyboard* _keyboard);
     float generateWave();
 
-    void setLFO(LFO* _oscLFO);
+    void bindLFO(LFO* _oscLFO);
     void setLFO_freq_intensity(double coef);
     void setLFO_Pw_intensity(double coef);
+    
     void switchWaveForm();
     void setWaveForm(int form);
     void setOctave(int oct);
