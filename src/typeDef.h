@@ -21,6 +21,15 @@ typedef struct
 }   
 PaData;
 
+typedef enum{
+    SQR, SAW, TRI, SINE
+
+}WaveType;
+
+typedef enum{
+    GATE, AR, ADSR
+}EnvelopType;
+
 #define PI 3.141592653589793
 #define Vt 0.312
 

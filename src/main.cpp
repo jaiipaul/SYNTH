@@ -10,7 +10,7 @@ int main(int argc, char* argv[]){
     cout << "AUDIO APP !" << endl;
     __Synth__ = new Synth();
     
-    __Synth__->initSynth("Audio App", 1000, 600, false, 44100, 256);
+    __Synth__->initSynth("Synth", 1000, 600, false, 44100, 256);
 
     while(__Synth__->isRunning()){
         __Synth__->handleEvents();

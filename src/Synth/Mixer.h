@@ -21,4 +21,4 @@ public:
     void setVolume(int VolumeIdx, double coef);
 };
 
-#endif _MIXER_H_
+#endif //_MIXER_H_

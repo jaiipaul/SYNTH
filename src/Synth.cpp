@@ -1,8 +1,8 @@
 #include <vector>
 
 #include "Synth.h"
-#include "Widgets.h"
-#include "Modules.h"
+#include "../GUI/Widgets.h"
+#include "../Synth/Modules.h"
 #include "SynthControls.h"
 
 //////// SYNTH MODULES ////////
@@ -14,15 +14,27 @@ static Mixer* __Mix__ = new Mixer();
 static std::vector<Oscillator*> Oscillators;
 static Oscillator* __Osc1__ = new Oscillator();
 static Oscillator* __Osc2__ = new Oscillator();
+static Oscillator* __SubOsc__ = new Oscillator();
 
 /* VCA */
 static Amplifier*  __Amp__ = new Amplifier();
+
 /* VCF */
 static LadderFilter* __Filter__ = new LadderFilter();
-/* LFOs */
-static LFO* __LFO__ = new LFO();
 
+/* LFOs */ 
+static std::vector<LFO*> LFOs;
+static LFO* __LFO1__ = new LFO();
+static LFO* __LFO2__ = new LFO();
 
+/* ENVELOPS */
+static std::vector<AR_envelop*> ARs;
+static AR_envelop*  __AR1__ = new AR_envelop();
+static AR_envelop*  __AR2__ = new AR_envelop();
+
+static std::vector<ADSR_envelop*> ADSRs;
+static ADSR_envelop*  __ADSR1__ = new ADSR_envelop();
+static ADSR_envelop*  __ADSR2__ = new ADSR_envelop();
 
 //////// SYNTH CLASS DEFINITION /////////
 Synth::Synth(){
@@ -47,7 +59,7 @@ int Synth::Callback( const void *inputBuffer, void *outputBuffer,
     for( i=0; i<framesPerBuffer; i++ )
     {   
 
-        SynthOutput(__Mix__, __Filter__, __LFO__, __Amp__, callbackData);
+        SynthOutput(__Mix__, __Filter__, __Amp__, LFOs, ARs, ADSRs, callbackData);
         out[2*i]   = 0.5*(callbackData->left_phase < 1.f)  ? callbackData->left_phase  : 1.f;  /* left */
         out[2*i+1] = 0.5*(callbackData->right_phase < 1.f) ? callbackData->right_phase : 1.f; /* right */
     }
@@ -63,8 +75,9 @@ void Synth::initSynth(const char* _name, int _width, int _height, bool fullscree
     __audioEngine__->OpenDefaultStream();
 
     /* SYNTH INITIALISATION */
+    __gui__ = new Gui();
     name = _name; width = _width; height = _height;
-    init("Synth", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, fullscreen);
+    __gui__->init(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, fullscreen);
 
     buildSynthGui();
     std::cout << "Built Gui..." << std::endl;
@@ -72,18 +85,25 @@ void Synth::initSynth(const char* _name, int _width, int _height, bool fullscree
     std::cout << "Built Modules..." << std::endl;
 }
 
+bool Synth::isRunning(){
+    return(__gui__->isRunning());
+}
+
+void Synth::handleEvents(){
+    __gui__->handleEvents();
+}
 void Synth::update(){
-    for(auto w : Widgets){
-        w->Update();
-    }
+    __gui__->update();
     __keyboard__->Update();
 }   
 
+void Synth::render(){
+    __gui__->render();
+}
+
 void Synth::clean(){
     __audioEngine__->clean();
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
-    SDL_Quit();
+    __gui__->clean();
     std::cout << "Synth cleaned!..." << std::endl;
 }
 
@@ -92,21 +112,62 @@ void Synth::buildSynthModules(){
     __keyboard__ = new Keyboard();
     __keyboard__->init(true);
 
+    __SubOsc__->init(2, 2, sampleRate, __keyboard__);
     __Osc1__->init(2, 3, sampleRate, __keyboard__);
-    __Osc2__->init(2, 3, sampleRate, __keyboard__);
+    __Osc2__->init(1, 3, sampleRate, __keyboard__);
+    
+    Oscillators.push_back(__SubOsc__);
     Oscillators.push_back(__Osc1__);
     Oscillators.push_back(__Osc2__);
-    __Mix__->init(2);
+    
+    __Mix__->init(3);
     __Amp__->init(sampleRate, __keyboard__);
-    __Filter__->init(96000.f);
-    __LFO__->init(3, sampleRate, __keyboard__);
-    __Osc1__->setLFO(__LFO__);
-    __Osc2__->setLFO(__LFO__);
+    __Filter__->init(96000);
+
+    __AR1__->init(sampleRate, __keyboard__);
+    __AR2__->init(sampleRate, __keyboard__);
+    __ADSR1__->init(sampleRate, __keyboard__);
+    __ADSR2__->init(sampleRate, __keyboard__);
+
+    ARs.push_back(__AR1__);
+    ARs.push_back(__AR2__);
+    ADSRs.push_back(__ADSR1__);
+    ADSRs.push_back(__ADSR2__);
+
+    __LFO1__->init(3, sampleRate, __keyboard__);
+    __LFO2__->init(3, sampleRate, __keyboard__);
+    LFOs.push_back(__LFO1__);
+    LFOs.push_back(__LFO2__);
+
+    /* Bindings */
+    __Osc1__->bindLFO(LFOs[0]);
+    __Osc2__->bindLFO(LFOs[0]);
+    
+    __Amp__->bindAR(ARs[0]);
+    __Amp__->bindADSR(ADSRs[0]);
+
+    __Filter__->bindLFO(LFOs[1]);
+    __Filter__->bindAR(ARs[1]);
+    __Filter__->bindADSR(ADSRs[1]);
 }
 
 /////// SYNTH SOUND PATH ///////
-void Synth::SynthOutput(Mixer* Mix, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp, PaData* Data){
-    __LFO__->generateWave();
+void Synth::SynthOutput(Mixer* Mix, LadderFilter* Filt, Amplifier* Amp, 
+                        std::vector<LFO*> _LFOs, 
+                        std::vector<AR_envelop*> _ARs, 
+                        std::vector<ADSR_envelop*> _ADSRs, 
+                        PaData* Data){
+    
+    for(auto lfo : _LFOs){
+        lfo->generateWave();
+    }
+    for(auto ar : _ARs){
+        ar->Update();
+    }
+    for(auto adsr : _ADSRs){
+        adsr->Update();
+    }
+
     __Mix__->generateOutput(Data, Oscillators);
     __Filter__->genOutput(Data);
     __Amp__->genOutput(Data);
@@ -114,101 +175,136 @@ void Synth::SynthOutput(Mixer* Mix, LadderFilter* Filt, LFO* Lfo, Amplifier* Amp
 
 ////////  SYNTH GUI /////////
 void Synth::buildSynthGui(){
+    /* AUDIO ENGINE */
     buttonFunc startStream     = &(StartStream);
     buttonFunc stopStream      = &(StopStream);
     buttonFunc listDevices     = &(ListDevices);
-    sliderFunc setPulseWidth   = &(SetPulseWidth);
-    sliderFunc setVolume       = &(SetVolume);
-    sliderFunc setEnvLvl       = &(SetEnvLvl);
-    sliderFunc setAR_Attack    = &(SetAR_Attack);
-    sliderFunc setAR_Release   = &(SetAR_Release);
-    sliderFunc setADSR_Attack  = &(SetADSR_Attack);
-    sliderFunc setADSR_Decay   = &(SetADSR_Decay);
-    sliderFunc setADSR_Sustain = &(SetADSR_Sustain);
-    sliderFunc setADSR_Release = &(SetADSR_Release);
-    buttonFunc switchEnvType   = &(SwitchEnvType);
-    sliderFunc setCutoff       = &(SetCutoff);
-    sliderFunc setResonance    = &(SetResonance);
-    buttonFunc switchWaveForm  = &(SwitchWaveForm);
-    sliderFunc setFreqMod      = &(SetFreqMod);
-    sliderFunc setPwMod        = &(SetPwMod);
-    sliderFunc setLfoRate      = &(SetLfoRate);
-    sliderFunc setDetune       = &(SetDetune);
+    /* OSC 1 (and sub)*/
+    buttonFunc switchOSC1WaveForm  = &(SwitchOSC1WaveForm);
+    sliderFunc setPulseWidth1      = &(SetPulseWidth1);
+    sliderFunc setFreqMod1         = &(SetFreqMod1);
+    sliderFunc setPwMod1           = &(SetPwMod1);
+
+    /* OSC 2 */
+    buttonFunc switchOSC2WaveForm  = &(SwitchOSC2WaveForm);
+    sliderFunc setPulseWidth2      = &(SetPulseWidth2);
+    sliderFunc setFreqMod2         = &(SetFreqMod2);
+    sliderFunc setPwMod2           = &(SetPwMod2);
+    sliderFunc setDetune2          = &(SetDetune2);
+
+    /* MIXER */
+    sliderFunc setVolumeSub    = &(SetVolumeSub);
+    sliderFunc setVolume1      = &(SetVolume1);
+    sliderFunc setVolume2      = &(SetVolume2);
+    
+    /* VCA */
+    sliderFunc setGlobalVolume  = &(SetGlobalVolume);
+    sliderFunc setVCAEnvLvl     = &(SetVCAEnvLvl);
+    buttonFunc switchEnvTypeVCA = &(SwitchEnvTypeVCA);
+
+    /* ENVELOPS */
+    sliderFunc setAR_Attack1    = &(SetAR_Attack1);
+    sliderFunc setAR_Release1   = &(SetAR_Release1);
+    sliderFunc setADSR_Attack1  = &(SetADSR_Attack1);
+    sliderFunc setADSR_Decay1   = &(SetADSR_Decay1);
+    sliderFunc setADSR_Sustain1 = &(SetADSR_Sustain1);
+    sliderFunc setADSR_Release1 = &(SetADSR_Release1);
+
+    sliderFunc setAR_Attack2    = &(SetAR_Attack2);
+    sliderFunc setAR_Release2   = &(SetAR_Release2);
+    sliderFunc setADSR_Attack2  = &(SetADSR_Attack2);
+    sliderFunc setADSR_Decay2   = &(SetADSR_Decay2);
+    sliderFunc setADSR_Sustain2 = &(SetADSR_Sustain2);
+    sliderFunc setADSR_Release2 = &(SetADSR_Release2);
+
+    /* FILTER */
+    buttonFunc switchEnvTypeVCF = &(SwitchEnvTypeVCF);
+    sliderFunc setCutoff        = &(SetCutoff);
+    sliderFunc setResonance     = &(SetResonance);
+    sliderFunc setDrive         = &(SetDrive);
+    sliderFunc setVCF_LFOint    = &(SetVCF_LFOint);
+    sliderFunc setVCFEnvLvl     = &(SetVCFEnvLvl);
+
+    /* LFOs */
+    sliderFunc setLFO1Rate      = &(SetLFO1Rate);
+    sliderFunc setLFO2Rate      = &(SetLFO2Rate);
+    buttonFunc switchLFO1WaveForm = &(SwitchLFO1WaveForm);
+    buttonFunc switchLFO2WaveForm = &(SwitchLFO2WaveForm);
 
     const char* buttonTextPath = "../../../assets/button.png";
     const char* buttonPurple = "../../../assets/button_purple.png";
 
-    Button* button1 = new Button(renderer, 10, 10, 64, 16, buttonTextPath);
-    button1->setFunction(startStream);
-    Button* button2 = new Button(renderer, 10, 36, 64, 16, buttonTextPath);
-    button2->setFunction(stopStream);
-    Button* button3 = new Button(renderer, 10, 62, 64, 16, buttonTextPath);
-    button3->setFunction(listDevices);
+    Button* button1 = new Button(__gui__, 10, 10, 64, 16, buttonTextPath);
+    button1->bind(startStream);
+    Button* button2 = new Button(__gui__, 10, 36, 64, 16, buttonTextPath);
+    button2->bind(stopStream);
+    Button* button3 = new Button(__gui__, 10, 62, 64, 16, buttonTextPath);
+    button3->bind(listDevices);
     // AMP sliders
-    Slider* slider1 = new Slider(renderer, 100, 200, 32, 8, 100, buttonTextPath);
-    slider1->setFunction(setVolume);
-    Slider* slider2 = new Slider(renderer, 150, 200, 32, 8, 100, buttonTextPath);
-    slider2->setFunction(setEnvLvl);
+    Slider* slider1 = new Slider(__gui__, 100, 200, 32, 8, 100, buttonTextPath);
+    slider1->bind(setGlobalVolume);
+    Slider* slider2 = new Slider(__gui__, 150, 200, 32, 8, 100, buttonTextPath);
+    slider2->bind(setVCAEnvLvl);
     // AR Sliders
-    Slider* slider3 = new Slider(renderer, 250, 200, 32, 8, 100, buttonTextPath);
-    slider3->setFunction(setAR_Attack);
-    Slider* slider4 = new Slider(renderer, 300, 200, 32, 8, 100, buttonTextPath);
-    slider4->setFunction(setAR_Release);
+    Slider* slider3 = new Slider(__gui__, 250, 200, 32, 8, 100, buttonTextPath);
+    slider3->bind(setAR_Attack1);
+    Slider* slider4 = new Slider(__gui__, 300, 200, 32, 8, 100, buttonTextPath);
+    slider4->bind(setAR_Release1);
     // ADSR Sliders
-    Slider* slider5 = new Slider(renderer, 400, 200, 32, 8, 100, buttonTextPath);
-    slider5->setFunction(setADSR_Attack);
-    Slider* slider6 = new Slider(renderer, 450, 200, 32, 8, 100, buttonTextPath);
-    slider6->setFunction(setADSR_Decay);
-    Slider* slider7 = new Slider(renderer, 500, 200, 32, 8, 100, buttonTextPath);
-    slider7->setFunction(setADSR_Sustain);
-    Slider* slider8 = new Slider(renderer, 550, 200, 32, 8, 100, buttonTextPath);
-    slider8->setFunction(setADSR_Release);
+    Slider* slider5 = new Slider(__gui__, 400, 200, 32, 8, 100, buttonTextPath);
+    slider5->bind(setADSR_Attack1);
+    Slider* slider6 = new Slider(__gui__, 450, 200, 32, 8, 100, buttonTextPath);
+    slider6->bind(setADSR_Decay1);
+    Slider* slider7 = new Slider(__gui__, 500, 200, 32, 8, 100, buttonTextPath);
+    slider7->bind(setADSR_Sustain1);
+    Slider* slider8 = new Slider(__gui__, 550, 200, 32, 8, 100, buttonTextPath);
+    slider8->bind(setADSR_Release1);
     // ENV selector
-    Button* button4 = new Button(renderer, 250, 150, 50, 50, buttonPurple);
-    button4->setFunction(switchEnvType);
+    Button* button4 = new Button(__gui__, 250, 150, 50, 50, buttonPurple);
+    button4->bind(switchEnvTypeVCA);
     //Filter 
-    Slider* slider9 = new Slider(renderer, 550, 50, 32, 8, 100, buttonTextPath);
-    slider9->setFunction(setCutoff);
-    Slider* slider10 = new Slider(renderer, 600, 50, 32, 8, 100, buttonTextPath);
-    slider10->setFunction(setResonance);
+    Slider* slider9 = new Slider(__gui__, 550, 50, 32, 8, 100, buttonTextPath);
+    slider9->bind(setCutoff);
+    Slider* slider10 = new Slider(__gui__, 600, 50, 32, 8, 100, buttonTextPath);
+    slider10->bind(setResonance);
 
     // Osc
-    Slider* slider11 = new Slider(renderer, 350, 50, 32, 8, 100, buttonTextPath);
-    slider11->setFunction(setPulseWidth);
-    Button* button5 = new Button(renderer, 250, 75, 64, 16, buttonTextPath);
-    button5->setFunction(switchWaveForm);
-    Slider* slider12 = new Slider(renderer, 150, 350, 32, 8, 100, buttonTextPath);
-    slider12->setFunction(setFreqMod);
-    Slider* slider13 = new Slider(renderer, 200, 350, 32, 8, 100, buttonTextPath);
-    slider13->setFunction(setPwMod);
+    Slider* slider11 = new Slider(__gui__, 350, 50, 32, 8, 100, buttonTextPath);
+    slider11->bind(setPulseWidth1);
+    Button* button5 = new Button(__gui__, 250, 75, 64, 16, buttonTextPath);
+    button5->bind(switchOSC1WaveForm);
+    Slider* slider12 = new Slider(__gui__, 150, 350, 32, 8, 100, buttonTextPath);
+    slider12->bind(setFreqMod1);
+    Slider* slider13 = new Slider(__gui__, 200, 350, 32, 8, 100, buttonTextPath);
+    slider13->bind(setPwMod1);
 
     //LFO
-    Slider* slider14 = new Slider(renderer, 100, 350, 32, 8, 100, buttonTextPath);
-    slider14->setFunction(setLfoRate);
+    Slider* slider14 = new Slider(__gui__, 100, 350, 32, 8, 100, buttonTextPath);
+    slider14->bind(setLFO1Rate);
 
-    Slider* slider15 = new Slider(renderer, 300, 350, 32, 8, 100, buttonTextPath);
-    slider15->setFunction(setDetune);
+    Slider* slider15 = new Slider(__gui__, 300, 350, 32, 8, 100, buttonTextPath);
+    slider15->bind(setDetune2);
 
-    Widgets.push_back(button1);
-    Widgets.push_back(button2);
-    Widgets.push_back(button3);
-    Widgets.push_back(slider1);
-    Widgets.push_back(slider2);
-    Widgets.push_back(slider3);
-    Widgets.push_back(slider4);
-    Widgets.push_back(slider5);
-    Widgets.push_back(slider6);
-    Widgets.push_back(slider7);
-    Widgets.push_back(slider8);
-    Widgets.push_back(button4);
-    Widgets.push_back(slider9);
-    Widgets.push_back(slider10);
-    Widgets.push_back(slider11);
-    Widgets.push_back(button5);
-    Widgets.push_back(slider12);
-    Widgets.push_back(slider13);
-    Widgets.push_back(slider14);
-    Widgets.push_back(slider15);
+    __gui__->addWidget(button1);
+    __gui__->addWidget(button2);
+    __gui__->addWidget(button3);
+    __gui__->addWidget(slider1);
+    __gui__->addWidget(slider2);
+    __gui__->addWidget(slider3);
+    __gui__->addWidget(slider4);
+    __gui__->addWidget(slider5);
+    __gui__->addWidget(slider6);
+    __gui__->addWidget(slider7);
+    __gui__->addWidget(slider8);
+    __gui__->addWidget(button4);
+    __gui__->addWidget(slider9);
+    __gui__->addWidget(slider10);
+    __gui__->addWidget(slider11);
+    __gui__->addWidget(button5);
+    __gui__->addWidget(slider12);
+    __gui__->addWidget(slider13);
+    __gui__->addWidget(slider14);
+    __gui__->addWidget(slider15);
 }
 
 
@@ -226,41 +322,40 @@ void ListDevices(){
     __audioEngine__->ListDevices();
 }
 //OSC
-void SetPulseWidth(double coef){
-    Oscillators[0]->setPulseWidth(coef);
+void SetPulseWidth1(double coef){
     Oscillators[1]->setPulseWidth(coef);
 }
 // AMPLIFIER
-void SetVolume(double coef){
+void SetGlobalVolume(double coef){
     __Amp__->setVolume(coef);
 }
-void SetEnvLvl(double coef){
+void SetVCAEnvLvl(double coef){
     __Amp__->setEnvelopLevel(coef);
 }
 
 // AR AMP ENVELOP
-void SetAR_Attack(double coef){
-    __Amp__->AR->setAttack(coef);
+void SetAR_Attack1(double coef){
+    ARs[0]->setAttack(coef);
 }
-void SetAR_Release(double coef){
-    __Amp__->AR->setRelease(coef);
+void SetAR_Release1(double coef){
+    ARs[0]->setRelease(coef);
 }
 
 // ADSR AMP ENVELOP
-void SetADSR_Attack(double coef){
-    __Amp__->ADSR->setAttack(coef);
+void SetADSR_Attack1(double coef){
+    ADSRs[0]->setAttack(coef);
 }
-void SetADSR_Decay(double coef){
-    __Amp__->ADSR->setDecay(coef);
+void SetADSR_Decay1(double coef){
+    ADSRs[0]->setDecay(coef);
 }
-void SetADSR_Sustain(double coef){
-    __Amp__->ADSR->setSustain(coef);
+void SetADSR_Sustain1(double coef){
+    ADSRs[0]->setSustain(coef);
 }
-void SetADSR_Release(double coef){
-    __Amp__->ADSR->setRelease(coef);
+void SetADSR_Release1(double coef){
+    ADSRs[0]->setRelease(coef);
 }
 
-void SwitchEnvType(){
+void SwitchEnvTypeVCA(){
     __Amp__->switchEnvelopType();
 }
 
@@ -272,25 +367,22 @@ void SetResonance(double coef){
     __Filter__->setResonance(coef);
 }
 
-void SwitchWaveForm(){
-    Oscillators[0]->switchWaveForm();
+void SwitchOSC1WaveForm(){
     Oscillators[1]->switchWaveForm();
 }
 
-void SetFreqMod(double coef){
-    Oscillators[0]->setLFO_freq_intensity(coef);
+void SetFreqMod1(double coef){
     Oscillators[1]->setLFO_freq_intensity(coef);
 }
-void SetPwMod(double coef){
-    Oscillators[0]->setLFO_Pw_intensity(coef);
+void SetPwMod1(double coef){
     Oscillators[1]->setLFO_Pw_intensity(coef);
 }
-void SetLfoRate(double coef){
+void SetLFO1Rate(double coef){
     std::cout << "set Lfo Rate" << std::endl;
-    __LFO__->setFreq(coef);
+    __LFO1__->setFreq(coef);
     std::cout << "set Lfo Rate" << std::endl;
 }
 
-void SetDetune(double coef){
-    Oscillators[1]->setDetune(coef);
+void SetDetune2(double coef){
+    Oscillators[2]->setDetune(coef);
 }

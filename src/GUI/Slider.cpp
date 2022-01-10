@@ -7,7 +7,7 @@ Slider::Slider(){
     clicked = false;
 }
 
-Slider::Slider(SDL_Renderer *_renderer, int _x_pos, int _y_pos, int _width, int _height, int size, const char* texturePath){
+Slider::Slider(Gui* _parent, int _x_pos, int _y_pos, int _width, int _height, int size, const char* texturePath){
     srcRect.x = 0;
     srcRect.y = 0;
     srcRect.w = 64;
@@ -18,7 +18,6 @@ Slider::Slider(SDL_Renderer *_renderer, int _x_pos, int _y_pos, int _width, int 
     dstRect.w  = _width;
     dstRect.h  = _height;
 
-    renderer = _renderer;
     setTexture(texturePath);
     std::cout << "texture loaded" << std::endl;
     clicked = false;
@@ -32,7 +31,7 @@ Slider::~Slider(){
 
 }
 
-void Slider::setFunction(sliderFunc _function){
+void Slider::bind(sliderFunc _function){
     func = _function;
 }
 
@@ -54,13 +53,13 @@ void Slider::Update(){
         //std::cout << "Mouse on Slider" << std::endl;
         if(!clicked) srcRect.x = 64;
         
-        if(Gui::event.type == SDL_MOUSEBUTTONDOWN && Gui::event.button.button == SDL_BUTTON_LEFT){
+        if(parent->event.type == SDL_MOUSEBUTTONDOWN && parent->event.button.button == SDL_BUTTON_LEFT){
             clicked = true;
         }
     }else{
         srcRect.x = 0;
     }
-    if(Gui::event.type == SDL_MOUSEBUTTONUP && Gui::event.button.button == SDL_BUTTON_LEFT){
+    if(parent->event.type == SDL_MOUSEBUTTONUP && parent->event.button.button == SDL_BUTTON_LEFT){
         srcRect.x = 0;
         clicked = false;
     }

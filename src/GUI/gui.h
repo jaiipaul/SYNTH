@@ -14,8 +14,7 @@ protected:
     bool Running = true;
     SDL_Window *window;
 
-    std::vector<Widget*> Widgets;
-    
+    std::vector<Widget*> Widgets;  
 public:
     Gui();
     ~Gui();

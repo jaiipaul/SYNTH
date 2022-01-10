@@ -5,9 +5,12 @@
 
 #include "typeDef.h"
 
+class Gui;
+
 class Widget{
 public:
-    SDL_Renderer *renderer;
+    Gui* parent;
+
     SDL_Texture  *texture;
     SDL_Rect srcRect, dstRect;
     

@@ -67,7 +67,7 @@ void ADSR_envelop::init(unsigned long _sampleRate, Keyboard* _keyboard){
 
 void ADSR_envelop::Update(){
     if(keyboard->getTrigger()){
-        std::cout << "reset env" << std::endl;
+        //std::cout << "reset env" << std::endl;
         ADSRcoef = 0.0f;
         t = 0;
     }

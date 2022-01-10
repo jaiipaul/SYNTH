@@ -18,10 +18,10 @@ private:
 
 public :
     Slider();
-    Slider(SDL_Renderer *_renderer, int _x_pos, int _y_pos, int _width, int _height, int size, const char* texturePath);
+    Slider(Gui* _parent, int _x_pos, int _y_pos, int _width, int _height, int size, const char* texturePath);
     ~Slider();
 
-    void setFunction(sliderFunc func);
+    void bind(sliderFunc _function);
     void setValue(int _rval);
     int  getValue();
     void Update();
