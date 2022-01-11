@@ -60,8 +60,9 @@ int Synth::Callback( const void *inputBuffer, void *outputBuffer,
     {   
 
         SynthOutput(__Mix__, __Filter__, __Amp__, LFOs, ARs, ADSRs, callbackData);
-        out[2*i]   = 0.5*(callbackData->left_phase < 1.f)  ? callbackData->left_phase  : 1.f;  /* left */
-        out[2*i+1] = 0.5*(callbackData->right_phase < 1.f) ? callbackData->right_phase : 1.f; /* right */
+        (abs(callbackData->left_phase)  > 1.f)  ? printf("CLIP\n") : 0; 
+        out[2*i]   = (abs(callbackData->left_phase)  < 1.f)  ? callbackData->left_phase  : 0.f;  /* left */
+        out[2*i+1] = (abs(callbackData->right_phase) < 1.f)  ? callbackData->right_phase : 0.f; /* right */
     }
     return 0;
 }

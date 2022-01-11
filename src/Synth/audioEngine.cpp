@@ -106,7 +106,7 @@ void AudioEngine::OpenDefaultStream(){
                         &outputParameters,          /* stereo output */ 
                         sampleRate,
                         framePerBuffer,
-                        paClipOff,
+                        paDitherOff,
                         callbackFunc,
                         Data);
     Error();
