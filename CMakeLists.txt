@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project("SYNTH" LANGUAGES CXX)
+project(SYNTH LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -51,12 +51,18 @@ add_subdirectory(${EXTERNALS}/portaudio)
 add_subdirectory(${EXTERNALS}/libremidi)
 
 add_executable(
-    SYNTH
+    Synth
     ${SOURCES}
 )
 
+add_dependencies(Synth
+    SDL2
+    SDL2_image
+    PortAudio
+    libremidi)
+
 target_include_directories(
-    SYNTH 
+    Synth 
     PUBLIC ${INCLUDES}
     PUBLIC ${EXTERNALS}/SDL/include/
     PUBLIC ${EXTERNALS}/SDL_image/
@@ -64,24 +70,24 @@ target_include_directories(
     PUBLIC ${EXTERNALS}/libremidi/include
 )
 
-target_link_directories(
-    SYNTH
-    #add directories where libs are
-    PRIVATE ${BUILD_DIR}/ext/libremidi/Release/
-    PRIVATE ${BUILD_DIR}/ext/portaudio/Release/
-    PRIVATE ${BUILD_DIR}/ext/SDL/Release
-    PRIVATE ${BUILD_DIR}/ext/SDL_image/Release
-)
+#target_link_directories(
+#    Synth
+#    #add directories where libs are
+#    PRIVATE ${BUILD_DIR}/ext/libremidi/Release/
+#    PRIVATE ${BUILD_DIR}/ext/portaudio/Release/
+#    PRIVATE ${BUILD_DIR}/ext/SDL/Release
+#    PRIVATE ${BUILD_DIR}/ext/SDL_image/Release
+#)
 
 target_link_libraries(
-    SYNTH 
+    Synth
     #add librairies here
-    PUBLIC winmm.lib
-    PUBLIC libremidi.lib
-    PUBLIC portaudio.lib
-    PUBLIC SDL2main.lib
-    PUBLIC SDL2.lib
-    PUBLIC SDL2_image.lib
+    PUBLIC winmm
+    PUBLIC libremidi
+    PUBLIC PortAudio
+    PUBLIC SDL2
+    PUBLIC SDL2main
+    PUBLIC SDL2_image
     )
 
 

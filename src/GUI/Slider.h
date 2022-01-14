@@ -16,16 +16,20 @@ private:
 
     sliderFunc func;
 
+    SDL_Rect barOnSrc, barOnDst;
+    SDL_Rect barOffSrc, barOffDst;
+    SDL_Texture  *barOn, *barOff;
 public :
     Slider();
     Slider(Gui* _parent, int _x_pos, int _y_pos, int _width, int _height, int size, const char* texturePath);
     ~Slider();
 
     void bind(sliderFunc _function);
-    void setValue(int _rval);
+    void setValue(int _rvalX, int _rvalY);
     int  getValue();
     void Update();
     bool isClicked();
+    void Draw();
 };
 
 #endif //_BUTTON_H_

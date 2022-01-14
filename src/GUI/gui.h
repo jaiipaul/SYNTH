@@ -14,6 +14,7 @@ protected:
     bool Running = true;
     SDL_Window *window;
 
+    SDL_Texture* background;
     std::vector<Widget*> Widgets;  
 public:
     Gui();

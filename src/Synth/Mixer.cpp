@@ -16,7 +16,7 @@ void Mixer::init(int _N_Osc){
     for(int i = 0; i < N_Osc; i++){
         volumes.push_back(0.f);
         std::cout << "set volume " << i << std::endl; 
-        setVolume(i, 1.0);
+        setVolume(i, 1.f);
     }
 }
 

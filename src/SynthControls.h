@@ -2,10 +2,6 @@
 #define _SYNTH_CONTROLS_H_
 
 /* CONTROL FUNCTIONS */
-// AUDIO ENGINE
-void StartStream();
-void StopStream();
-void ListDevices();
 
 // OSCS
 // OSC 1 controls

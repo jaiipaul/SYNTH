@@ -30,7 +30,9 @@ void Gui::init(const char* title,
 
         renderer = SDL_CreateRenderer(window, -1, 0);
         if(renderer){
-            SDL_SetRenderDrawColor(renderer, 150, 100, 150, 255);
+            SDL_Surface* tmpSurface = IMG_Load("../../../assets/background.png");
+            background = SDL_CreateTextureFromSurface(renderer, tmpSurface);
+            SDL_FreeSurface(tmpSurface);
             std::cout << "renderer created!..." << std::endl;
         }
         Running = true;
@@ -57,8 +59,8 @@ void Gui::update(){
 
 void Gui::render(){
     SDL_RenderClear(renderer);
-    int i = 0;
     //Where to add stuff to render
+    SDL_RenderCopy(renderer, background, NULL, NULL);
     for(auto w : Widgets){
         w->Draw();
     }

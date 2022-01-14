@@ -21,7 +21,7 @@ public:
     
     void setTexture(const char* TexturePath);
     virtual void Update()=0;
-    void Draw();
+    virtual void Draw() = 0;
 };
 
 #endif //_WIDGET_H_

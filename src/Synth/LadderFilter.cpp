@@ -30,13 +30,14 @@ void LadderFilter::init(unsigned long _sampleRate){
     LFO_linked = false;
     AR_linked  = false;
     ADSR_linked = false;
-    ENV_type = 0;
+    EnvType = 0;
+    Drive = 1.f;
 }
 
 void LadderFilter::genOutput(PaData* Data){
     ComputeCoef();
     /* Copyright 2012 Stefano D'Angelo <zanga.mail@gmail.com> */ 
-    double X = Data->left_phase + 4*resonance*StageOutputs[3];
+    double X = Drive*Data->left_phase + 4*resonance*StageOutputs[3];
 
     double Stage0 = -G*(tanh( X/(2*Vt)) + StageT[0]);
     StageOutputs[0] += (Stage0 + StageFeedbacks[0]) / (2.f * sampleRate);
@@ -79,11 +80,11 @@ void LadderFilter::genOutput(PaData* Data){
 
 void LadderFilter::ComputeCoef(){
     float x = (PI * cutoff)/sampleRate;
-    float Env = ENV_intensity * ((ENV_type == 0) ? AR->getAR_Coef() : ADSR->getADSR_Coef());
+    float Env = ENV_intensity * ((EnvType == 0) ? AR->getAR_Coef() : ADSR->getADSR_Coef());
     float Mod = LFO_intensity * maxCutoffMod * Lfo->getValue();
     float w0 =  (2.f * PI * (cutoff + Mod)) * Env ;
 
-    G = 2.f * Vt * cutoff * (1.f - x)/(1.f + x);
+    G = 2.f * Vt * w0 * (1.f - x)/(1.f + x);
 }
 
 void LadderFilter::setCutoff(double coef){
@@ -92,25 +93,40 @@ void LadderFilter::setCutoff(double coef){
 }
 
 void LadderFilter::setResonance(double coef){
-    resonance = (coef >= 0.f && coef <= 1.f) ? (float)coef: 0.f;
+    resonance = (coef >= 0.f && coef <= 1.f) ? (float)coef : 0.f;
     std::cout << "Filter Resonance : " << resonance << std::endl;
 }
 
+void LadderFilter::setDrive(double coef){
+    Drive = 1 + ((coef >= 0.f && coef <= 1.f) ? (float)coef : 0.f ) ;
+}
 void LadderFilter::bindLFO(LFO* _Lfo){
     Lfo = _Lfo;
-};
+}
 void LadderFilter::setLFOintensity(double coef){
     LFO_intensity = (float)coef;
-};
+}
+
+void LadderFilter::switchEnvType(){
+    EnvType = (++EnvType)%2;
+    switch(EnvType){
+        case 0:
+            std::cout << "VCF envelop type : AR" << std::endl;
+            break;
+        case 1:
+            std::cout << "VCF envelop type : ADSR" << std::endl;
+            break;
+    } 
+}
 
 void LadderFilter::bindAR(AR_envelop* _AR){
     AR = _AR;
     AR_linked = true;
-};
+}
 void LadderFilter::bindADSR(ADSR_envelop* _ADSR){
     ADSR = _ADSR;
     ADSR_linked = true;
-};
+}
 void LadderFilter::setENVintensity(double coef){
     ENV_intensity = (float)coef;
-};
+}

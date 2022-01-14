@@ -24,6 +24,7 @@ public :
     
     void Update();
     bool isClicked();
+    void Draw();
 };
 
 #endif //_BUTTON_H_

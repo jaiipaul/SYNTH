@@ -19,7 +19,3 @@ void Widget::setTexture(const char* TexturePath){
 void Widget::Update(){
 
 }
-
-void Widget::Draw(){
-    SDL_RenderCopy(parent->renderer, texture, &srcRect, &dstRect);
-}

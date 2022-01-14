@@ -17,7 +17,7 @@ private:
     const char* name;
     int width;
     int height;
-    
+     
 public:
     //Oscillator*  Osc;
     Keyboard* __keyboard__;

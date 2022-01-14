@@ -14,8 +14,8 @@ Button::Button(Gui* _parent, int _x_pos, int _y_pos, int _width, int _height, co
 
     srcRect.x = 0;
     srcRect.y = 0;
-    srcRect.w = 50;
-    srcRect.h = 50;
+    srcRect.w = 32;
+    srcRect.h = 32;
 
     dstRect.x  = _x_pos;
     dstRect.y  = _y_pos;
@@ -23,8 +23,9 @@ Button::Button(Gui* _parent, int _x_pos, int _y_pos, int _width, int _height, co
     dstRect.h  = _height;
 
     setTexture(texturePath);
-    std::cout << "texture loaded" << std::endl;
     clicked = false;
+
+    _parent->addWidget(this);
 }
 
 Button::~Button(){
@@ -44,12 +45,12 @@ void Button::Update(){
         && mouseX < dstRect.x + dstRect.w 
         && mouseY < dstRect.y + dstRect.h ){
         
-        if(!clicked) srcRect.x = 0;
+        if(!clicked) srcRect.x = 32;
         //std::cout << "Mouse on button" << std::endl;
 
         if(parent->event.type == SDL_MOUSEBUTTONDOWN && parent->event.button.button == SDL_BUTTON_LEFT){
             clicked = true;
-            srcRect.x = 50;
+            srcRect.x = 2*32;
             std::cout << "button clicked" << std::endl;
             func();
         }
@@ -65,4 +66,8 @@ void Button::Update(){
 
 bool Button::isClicked(){
     return(clicked);
+}
+
+void Button::Draw(){
+    SDL_RenderCopy(parent->renderer, texture, &srcRect, &dstRect);
 }

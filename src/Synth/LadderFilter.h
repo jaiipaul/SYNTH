@@ -26,7 +26,7 @@ private :
 
     bool AR_linked;
     bool ADSR_linked;
-    int  ENV_type;
+    int EnvType;
     float ENV_intensity;
     
     bool LFO_linked;
@@ -50,6 +50,8 @@ public:
 
     void bindLFO(LFO* _Lfo);
     void setLFOintensity(double coef);
+
+    void switchEnvType();
     void bindAR(AR_envelop* _AR);
     void bindADSR(ADSR_envelop* _ADSR);
     void setENVintensity(double coef);

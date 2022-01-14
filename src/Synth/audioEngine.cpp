@@ -27,6 +27,9 @@ void AudioEngine::init(unsigned long _sampleRate, unsigned long _bufferSize){
 }
 
 void AudioEngine::clean(){
+    if(streamStarted){
+        StopStream();
+    }
     if(isStreamOpened()){
         CloseStream();
     }
@@ -95,7 +98,7 @@ void AudioEngine::ListDevices(){
 void AudioEngine::OpenDefaultStream(){
     PaStreamParameters outputParameters;
     outputParameters.device = Pa_GetDefaultOutputDevice(); /* default output device */
-
+    std::cout << "Audio Device used : " << Pa_GetDeviceInfo(outputParameters.device)->name << std::endl;
     outputParameters.channelCount = 2;       /* stereo output */
     outputParameters.sampleFormat = paFloat32; /* 32 bit floating point output */
     outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
@@ -106,7 +109,7 @@ void AudioEngine::OpenDefaultStream(){
                         &outputParameters,          /* stereo output */ 
                         sampleRate,
                         framePerBuffer,
-                        paDitherOff,
+                        paClipOff,
                         callbackFunc,
                         Data);
     Error();
