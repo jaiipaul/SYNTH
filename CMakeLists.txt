@@ -82,7 +82,6 @@ target_include_directories(
 target_link_libraries(
     Synth
     #add librairies here
-    PUBLIC winmm
     PUBLIC libremidi
     PUBLIC PortAudio
     PUBLIC SDL2
@@ -90,7 +89,13 @@ target_link_libraries(
     PUBLIC SDL2_image
     )
 
-
+#if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+#    target_link_libraries(
+#        Synth PUBLIC winmm
+#    )
+#elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+#endif()
+#else if(${CMAKE_SYSTEM_NAME} = "Darwin")
 #set_target_properties( 
 #    SYNTH PROPERTIES
 #    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}

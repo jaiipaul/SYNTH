@@ -1,3 +1,3 @@
 cd build/bin/Release/
-./SYNTH.exe
+./Synth.exe
 cd ../../..
