@@ -30,7 +30,7 @@ void Gui::init(const char* title,
 
         renderer = SDL_CreateRenderer(window, -1, 0);
         if(renderer){
-            SDL_Surface* tmpSurface = IMG_Load("../../../assets/background.png");
+            SDL_Surface* tmpSurface = IMG_Load("../../assets/background.png");
             background = SDL_CreateTextureFromSurface(renderer, tmpSurface);
             SDL_FreeSurface(tmpSurface);
             std::cout << "renderer created!..." << std::endl;

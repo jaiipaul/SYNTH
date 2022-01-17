@@ -236,8 +236,8 @@ void Synth::buildSynthGui(){
     buttonFunc switchLFO1WaveForm = &(SwitchLFO1WaveForm);
     buttonFunc switchLFO2WaveForm = &(SwitchLFO2WaveForm);
 
-    const char* buttonTextPath = "../../../assets/buttonSqrGreen.png";
-    const char* sliderTextPath = "../../../assets/sliderRectPurple.png";
+    const char* buttonTextPath = "../../assets/buttonSqrGreen.png";
+    const char* sliderTextPath = "../../assets/sliderRectPurple.png";
 
     // AMP sliders
     Slider* VCA_volumeSlider = new Slider(__gui__, 392, 196, 32, 16, 100, sliderTextPath);

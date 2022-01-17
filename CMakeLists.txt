@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 project(SYNTH LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-#set(OUTPUT_DIR "../bin")
-
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(OUTPUT_DIR "${PROJECT_SOURCE_DIR}/bin")
+set(BUILD_SHARED_LIBS OFF)
 
 set(BUILD_DIR
     "${PROJECT_SOURCE_DIR}/build/")
@@ -55,8 +55,12 @@ add_executable(
     ${SOURCES}
 )
 
+set_target_properties(
+    Synth PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
+)
 add_dependencies(Synth
-    SDL2
+    SDL2-static
     SDL2_image
     PortAudio
     libremidi)
@@ -84,7 +88,7 @@ target_link_libraries(
     #add librairies here
     PUBLIC libremidi
     PUBLIC PortAudio
-    PUBLIC SDL2
+    PUBLIC SDL2-static
     PUBLIC SDL2main
     PUBLIC SDL2_image
     )
