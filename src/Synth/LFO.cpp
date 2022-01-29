@@ -31,33 +31,42 @@ void LFO::init(int _waveForm, unsigned long _sampleRate, Keyboard* _keyboard){
 }
 
 void LFO::generateWave(){
-    if(keySync && keyboard->getTrigger()) t = 0;
+    if(keySync && keyboard->getTrigger() && t != 0){
+        //std::cout << "reset LFO" << std::endl;
+        t = 0;
+        time = 0;
+    }else if(keyboard->getGate()){
+        t++;
+        time = fmod(Frequency*(float)t/sampleRate,1.0);
     
-    switch(waveForm){
-        case 0: /*SAW*/
-            value  = time*2.f-1.f;
-            break;
-        case 1: /*TRIANGLE*/
-            value  = 1.f-fabs(time-0.5)*4.f;
-            break;
-        case 2: /*SQUARE*/
-            if(t < (sampleRate/Frequency)){
-            value = 1.0f;
-            }else{
-            value = -1.0f;
-            }
-            break;
-        case 3: /*SINE*/
-            value = sin(2.f*PI*time);
+        //std::cout << t << std::endl;
+        switch(waveForm){
+            case 0: /*SAW*/
+                value  = time*2.f-1.f;
+                break;
+            case 1: /*TRIANGLE*/
+                value  = 1.f-fabs(time-0.5)*4.f;
+                break;
+            case 2: /*SQUARE*/
+                if(time < 0.5f){
+                value = 1.0f;
+                }else{
+                value = -1.0f;
+                }
+                break;
+            case 3: /*SINE*/
+                value = sin(2.f*PI*time);
+        }
+    }else{
+        t = 0;
+        time = 0;
     }
-
     // if((Data->t) < sampleRate/Frequency){
         // Data->t++;
     // }else{
         // Data->t = 0;
     // }
-    t++;
-    time = fmod(Frequency*(float)t/sampleRate,1.0);
+    
 }
 
 float LFO::getValue(){

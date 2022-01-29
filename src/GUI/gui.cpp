@@ -1,6 +1,6 @@
 #include "gui.h"
 #include "Widgets.h"
-
+#include "textures.h"
 SDL_Renderer* Gui::renderer = nullptr;
 SDL_Event Gui::event;
 
@@ -30,7 +30,7 @@ void Gui::init(const char* title,
 
         renderer = SDL_CreateRenderer(window, -1, 0);
         if(renderer){
-            SDL_Surface* tmpSurface = IMG_Load("../../assets/background.png");
+            SDL_Surface* tmpSurface = IMG_Load(backGround_path);
             background = SDL_CreateTextureFromSurface(renderer, tmpSurface);
             SDL_FreeSurface(tmpSurface);
             std::cout << "renderer created!..." << std::endl;

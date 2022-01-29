@@ -55,10 +55,6 @@ add_executable(
     ${SOURCES}
 )
 
-set_target_properties(
-    Synth PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
-)
 add_dependencies(Synth
     SDL2-static
     SDL2_image
@@ -74,15 +70,6 @@ target_include_directories(
     PUBLIC ${EXTERNALS}/libremidi/include
 )
 
-#target_link_directories(
-#    Synth
-#    #add directories where libs are
-#    PRIVATE ${BUILD_DIR}/ext/libremidi/Release/
-#    PRIVATE ${BUILD_DIR}/ext/portaudio/Release/
-#    PRIVATE ${BUILD_DIR}/ext/SDL/Release
-#    PRIVATE ${BUILD_DIR}/ext/SDL_image/Release
-#)
-
 target_link_libraries(
     Synth
     #add librairies here
@@ -93,28 +80,12 @@ target_link_libraries(
     PUBLIC SDL2_image
     )
 
-#if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-#    target_link_libraries(
-#        Synth PUBLIC winmm
-#    )
-#elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-#endif()
-#else if(${CMAKE_SYSTEM_NAME} = "Darwin")
-#set_target_properties( 
-#    SYNTH PROPERTIES
-#    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR}
-#)
+#Copying application to bin directory
+add_custom_command(TARGET Synth POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_directory
+    $<TARGET_FILE_DIR:Synth>
+    ${OUTPUT_DIR})
 
-
-#add_custom_command(TARGET SYNTH POST_BUILD
-#COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#    ${BUILD_DIR}/ext/SDL/Release/SDL2.dll
-#    ${BUILD_DIR}/ext/SDL_image/Release/SDL2_image.dll
-#    ${BUILD_DIR}/ext/SDL_image/external/libpng-1.6.37/Release/libpng16.dll
-#    ${BUILD_DIR}/ext/SDL_image/external/zlib-1.2.11/Release/zlib1.dll
-#    ${BUILD_DIR}/ext/portaudio/Release/portaudio.dll
-#    ${BUILD_DIR}/ext/rtmidi/Release/rtmidi.dll
-#    $<TARGET_FILE_DIR:SYNTH>)
 
 
 

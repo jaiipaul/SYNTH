@@ -45,6 +45,7 @@ void Keyboard::MidiUpdate(){
         printf("mod : %f | oct : %f\n", mod, oct);
         switch (messageIn.bytes[0]){
             case 0x90:
+                Last_MidiNote = messageIn.bytes[1];
                 note = pow(2.0f, (fmod((float)messageIn.bytes[1], 12.f)/12.0f)) * pow(2, (int)messageIn.bytes[1]/12);
                 std::cout << "Trig ON" << std::endl;
                 Trigger = !Gate ? true : false;
@@ -52,8 +53,10 @@ void Keyboard::MidiUpdate(){
                 break;
             
             case 0x80:
-                Gate = false;
-                Trigger = false;
+                if(messageIn.bytes[1] == Last_MidiNote){
+                    Gate = false;
+                    Trigger = false;
+                }
                 break;
             
         }
@@ -72,6 +75,7 @@ void Keyboard::MidiUpdate(){
 
 void Keyboard::KeyUpdate(){
     if(Gui::event.type == SDL_KEYDOWN){
+        Last_KeyNote = Gui::event.key.keysym.sym;
         switch (Gui::event.key.keysym.sym){
             case SDLK_q:
                 note = pow(2.0f, 0.0f/12.0f) * pow(2, octave);
@@ -144,7 +148,7 @@ void Keyboard::KeyUpdate(){
             default:
                 break;
         }
-    }else if(Gui::event.type == SDL_KEYUP){
+    }else if(Gui::event.type == SDL_KEYUP && Gui::event.key.keysym.sym == Last_KeyNote){
         switch (Gui::event.key.keysym.sym){
             case SDLK_q:
                 Gate = false;

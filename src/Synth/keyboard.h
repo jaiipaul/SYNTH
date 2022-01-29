@@ -2,12 +2,16 @@
 #define _KEYBOARD_H_
 
 #include <libremidi/libremidi.hpp>
+#include <SDL.h>
 
 class Keyboard{
 private:
     int baseOctave = 3;
     int octave;
     float note;
+
+    SDL_Keycode Last_KeyNote;
+    unsigned char Last_MidiNote;
 
     bool Gate;
     bool Trigger;

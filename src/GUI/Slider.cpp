@@ -2,6 +2,7 @@
 #include "gui.h"
 #include "SDL.h"
 #include <iostream>
+#include "textures.h"
 
 Slider::Slider(){
     clicked = false;
@@ -28,10 +29,10 @@ Slider::Slider(Gui* _parent, int _x_pos, int _y_pos, int _width, int _height, in
     barOnDst.w = barOffDst.w = barOffSrc.w;
     barOnDst.h = barOffDst.h = barOffSrc.h;
     
-    SDL_Surface* tmpSurface = IMG_Load("../../assets/sliderBarON.png");
+    SDL_Surface* tmpSurface = IMG_Load(sliderBarON_path);
     barOn = SDL_CreateTextureFromSurface(parent->renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
-    tmpSurface = IMG_Load("../../assets/sliderBarOFF.png");
+    tmpSurface = IMG_Load(sliderBarOFF_path);
     barOff = SDL_CreateTextureFromSurface(parent->renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
 
